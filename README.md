@@ -1,6 +1,14 @@
-# PFT – Personal Fitness Tracker · v1.1.0
+# PFT – Personal Fitness Tracker · v1.2.0
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
+
+## Neu in 1.2.0
+
+- **Mengen anpassen:** Jede Zutat einer Mahlzeit hat jetzt − / + und ein Mengenfeld; die Einheit lässt sich umschalten (g ↔ Stück, Scheiben, EL, TL, Glas, Becher …). kcal, Eiweiß, Fett und Kohlenhydrate rechnen sich proportional mit. Dazu **Portion ×½ … ×4** für alle Zutaten auf einmal.
+- **Meine Mahlzeiten:** Eine Mahlzeit mit „★ Als meine Mahlzeit speichern" ablegen (z. B. Porridge) und an jedem Tag mit **„+ Heute"** eintragen – oder antippen, Mengen anpassen und dann speichern. Verwalten unter Ernährung → Meine Mahlzeiten (Kurzbefehl `#mymeals`).
+- **Viel mehr Lebensmittel:** ca. 450 eingebaut (neu u. a. Fisch & Meeresfrüchte, mehr Käse, Brot, Wurst, Obst, Gemüse, Getränke, Snacks, ~50 Gerichte).
+- **Open Food Facts:** In Lebensmittel und in der Auswahl einer Zutat lassen sich Millionen Packungsprodukte suchen – per Name oder Barcode-Nummer. Treffer antippen → Werte prüfen → als eigenes Lebensmittel speichern. Braucht Internet; die Daten stammen von der Community (ODbL).
+- Mahlzeiten aus 1.1 werden automatisch übernommen und sind danach ebenfalls anpassbar.
 
 ## Neu in 1.1.0
 
@@ -31,4 +39,4 @@ Link in **Safari** öffnen → **Teilen → Zum Home-Bildschirm**. Die Home-Bild
 
 ## Kurzbefehle
 
-`#start` (Training) · `#meal` (Mahlzeit eintragen) · `#food` · `#cali` · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb` · `#live`
+`#start` (Training) · `#meal` (Mahlzeit eintragen) · `#mymeals` · `#food` · `#cali` · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb` · `#live`
