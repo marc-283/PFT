@@ -1,36 +1,34 @@
-# PFT – Personal Fitness Tracker · v1.0.0
+# PFT – Personal Fitness Tracker · v1.1.0
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
 
-## Was drin ist
+## Neu in 1.1.0
 
-- **Gym-Training live loggen:** Übungen mit Sätzen, Gewicht (kg) und Wiederholungen. „Vorher"-Spalte zeigt das letzte Mal, Platzhalter übernehmen die Werte beim Abhaken. Aufwärmsätze (Satznummer antippen → „A") zählen nicht für Rekorde. Pausen-Timer nach jedem Satz (Zeit in den Einstellungen).
-- **Workouts bauen:** eigene Pläne (z. B. Push/Pull/Beine) mit Sätzen und Wdh.-Spanne. Beim Start ist alles vorausgefüllt.
-- **Fortschritt grafisch:** pro Übung geschätztes 1RM (Epley), schwerstes Gewicht, Volumen – mit Rekordlinie, Antippen zum Ablesen, Vollbild mit „Abspielen". Dazu Wochenvolumen, Sätze pro Muskelgruppe, Rekorde und ein Tipp fürs nächste Training.
-- **Laufen, Hyrox, Fußball, Sonstiges:** Dauer, Distanz, Pace, Art (z. B. Tempo/Spiel/Wettkampf), Anstrengung 1–10, Tore/Vorlagen. Eigene Ansicht mit Wochen-Charts und Bestwerten.
-- **Übungsbibliothek:** gut 50 Übungen auf Deutsch, eigene anlegen und umbenennen.
-- **Daten:** Backup als JSON (z. B. in iCloud Drive), CSV-Export für Excel/Numbers, Beispieldaten zum Ausprobieren.
+- **Sprache:** Englisch als Standard, umschaltbar auf Deutsch (Einstellungen → Language/Sprache). Die Wahl bleibt gespeichert.
+- **Ernährung:** Zutaten frei eintippen, z. B. „eier 5 stk, brot 2 scheiben, 200g hähnchen" – PFT erkennt Lebensmittel und Mengen (g, ml, Stk, Scheiben, EL, TL, Glas, Tasse, Handvoll, Dose, Portion …, deutsch oder englisch) und zeigt kcal, Eiweiß, Fett und Kohlenhydrate in Gramm. Tagesübersicht, Verlauf als Chart, „Nochmal?" für wiederkehrende Mahlzeiten, eigene Lebensmittel von der Packung, optionale Tagesziele.
+- **Calisthenics:** eigenes Menü mit Halte-Skills (Handstand, L-Sitz, Elbow Lever, Front/Back Lever, Planche, Human Flag …), dynamischen Skills (Muscle-up, Hüftaufschwung, HSPU, Dragon Flag, Pistol Squat …) und Grundübungen – jeweils mit Progressionsstufen, Haltezeiten bzw. Wiederholungen, Rekorden und Tipp für die nächste Stufe.
+- **Wischen wie in PFM:** zurück jetzt vom linken Rand *und* von fast überall auf der Seite (nicht auf Charts, Eingabefeldern und Chip-Leisten).
+- **Neues Startbild:** Turnring im Spotlight mit Magnesia-Wolke.
+- Daten aus 1.0 werden automatisch übernommen.
 
-## Auf GitHub veröffentlichen (wie bei PFM)
+## Was sonst drin ist
 
-1. Auf github.com ein **neues Repository** anlegen, z. B. `pft`. Für kostenloses GitHub Pages muss es *public* sein.
-2. Im Repo **Add file → Upload files** und den kompletten Inhalt dieses Ordners hineinziehen (`index.html`, `sw.js`, `manifest.webmanifest`, `splash.jpg`, die Ordner `fonts/` und `icons/`). Commit.
-3. **Settings → Pages →** Source: *Deploy from a branch*, Branch: `main`, Ordner: `/ (root)` → Save.
-4. Nach ca. 1 Minute läuft die App unter `https://DEIN-NAME.github.io/pft/`.
+- **Gym-Training live loggen:** Sätze mit kg und Wiederholungen, „Vorher"-Werte vom letzten Mal, Aufwärmsätze, Pausen-Timer, Rekorde live.
+- **Workouts bauen:** eigene Pläne mit Sätzen, Wdh.-Spanne und (bei Skills) Stufe.
+- **Fortschritt grafisch:** e1RM, Gewicht, Volumen je Übung mit Rekordlinie, Antippen zum Ablesen, Vollbild mit „Abspielen"; Wochenvolumen, Sätze pro Muskelgruppe.
+- **Laufen, Hyrox, Fußball, Sonstiges:** Dauer, Distanz, Pace, Art, Anstrengung, Tore/Vorlagen, Bestwerte.
+- **Daten:** Backup als JSON, CSV-Export (Sätze und Mahlzeiten), Beispieldaten zum Ausprobieren.
+
+## Auf GitHub aktualisieren
+
+Im bestehenden Repo **Add file → Upload files**, den kompletten Inhalt dieses Ordners hineinziehen und committen (gleichnamige Dateien werden ersetzt). GitHub Pages veröffentlicht nach ca. 1 Minute. Beim nächsten Öffnen mit Internet lädt die App die neue Version (neuer Cache-Name in `sw.js`); falls nicht sofort: App einmal komplett schließen und neu öffnen.
+
+Erstmalig: neues *public* Repository anlegen, Dateien hochladen, **Settings → Pages → Deploy from a branch → `main` / `(root)`**.
 
 ## Aufs iPhone holen
 
-1. Den Link in **Safari** öffnen.
-2. **Teilen → Zum Home-Bildschirm.**
-3. Ab jetzt PFT immer über das Icon öffnen. Oben im Menü steht dann „Auf diesem iPhone" (grüner Punkt).
-
-Wichtig: Die Home-Bildschirm-App hat ihren eigenen Speicher, getrennt von Safari. Wird das Icon gelöscht, sind die Daten weg – deshalb ab und zu **Einstellungen → Backup sichern**. Ein Backup lässt sich auf jedem Gerät wieder laden.
-
-## Updates
-
-Neue Version = Dateien im Repo ersetzen. `sw.js` enthält einen Cache-Namen mit Versionsnummer (`pft-1.0.0-…`). Ändert sich der, lädt die App beim nächsten Öffnen mit Internet die neue Version. Wird nur `index.html` von Hand geändert, den Cache-Namen in `sw.js` ebenfalls ändern – sonst zeigt das iPhone weiter die alte Version.
+Link in **Safari** öffnen → **Teilen → Zum Home-Bildschirm**. Die Home-Bildschirm-App hat ihren eigenen Speicher – ab und zu **Einstellungen → Backup sichern** (z. B. in iCloud Drive).
 
 ## Kurzbefehle
 
-Links mit Anhang öffnen direkt eine Ansicht (z. B. für die iOS-Kurzbefehle-App):
-`#start` (Training starten) · `#live` (laufendes Training) · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb`
+`#start` (Training) · `#meal` (Mahlzeit eintragen) · `#food` · `#cali` · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb` · `#live`

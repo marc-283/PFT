@@ -1,8 +1,8 @@
 {
   "name": "PFT – Personal Fitness Tracker",
   "short_name": "PFT",
-  "description": "Gym-Fortschritt, Laufen, Hyrox und Fußball tracken – offline auf deinem Handy.",
-  "lang": "de",
+  "description": "Track gym progress, calisthenics skills, nutrition, running, Hyrox and football – offline on your phone.",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -15,8 +15,9 @@
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Training starten", "short_name": "Training", "url": "./#start", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Fortschritt", "short_name": "Fortschritt", "url": "./#progress", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Lauf eintragen", "short_name": "Laufen", "url": "./#run", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Start workout", "short_name": "Workout", "url": "./#start", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Add meal", "short_name": "Meal", "url": "./#meal", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Calisthenics", "short_name": "Cali", "url": "./#cali", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Log a run", "short_name": "Run", "url": "./#run", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
