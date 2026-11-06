@@ -27,7 +27,7 @@ img { max-width: 100%; }
 [hidden] { display: none !important; }
 </style>
 <script>
-window.PFT_VERSION = "1.2.0";
+window.PFT_VERSION = "1.3.0";
 if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
 </head>
@@ -514,6 +514,95 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
 .offwait { padding: 10px 0; }
 .offerr { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 6px 0; }
 @media (max-width: 370px) { .iqty { width: 56px; } .iunit { width: 120px; } .iamt { gap: 4px; } .iamt .mbtn { width: 34px; height: 34px; } }
+
+/* v1.3: reports */
+.notice.report { border-color: var(--accent); }
+.notice.report b { font-weight: 700; }
+.tile-t .tag { vertical-align: middle; font-family: var(--f-body); letter-spacing: 0.06em; }
+.dl { display: inline-block; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); border-radius: 6px; padding: 1px 6px; background: var(--raised); }
+.dl.up { color: var(--pos); background: rgba(48, 217, 127, 0.12); }
+.dl.down { color: var(--neg); background: rgba(255, 79, 69, 0.12); }
+.dl.new { color: var(--accent); background: rgba(255, 232, 58, 0.1); text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+.row .val .dl { font-size: 12.5px; }
+.herosub .dl { font-size: 13.5px; margin-right: 4px; }
+.repnav { margin-bottom: -6px; }
+.repnav b { font-family: var(--f-display); font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.hlcard { gap: 10px; }
+.hl { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.hl li { position: relative; padding-left: 18px; font-size: 15px; line-height: 1.38; color: var(--ink); }
+.hl li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.hl b { font-weight: 700; }
+.kpirow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.kpirow .k { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kpirow .v { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpirow .v b { font-weight: 600; }
+.kpirow .v small { display: block; font-size: 12.5px; color: var(--muted); }
+.kpirow .dl { min-width: 64px; text-align: center; }
+.cmprow { padding: 11px 0 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 7px; }
+.cmptop { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; }
+.cmpname { display: flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmpname i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.cmpval { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cmpval b { font-weight: 600; }
+.cmpval small { display: block; font-size: 12.5px; color: var(--muted); }
+.cmptop .dl { min-width: 64px; text-align: center; }
+.cmpbars { display: flex; flex-direction: column; gap: 3px; }
+.cmpbars span { display: block; border-radius: 3px; min-width: 2px; }
+.cmpbars .cur { height: 7px; }
+.cmpbars .old { height: 4px; background: var(--faint); }
+.cmpread { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; min-height: 42px; padding: 10px 0 4px; font-variant-numeric: tabular-nums; }
+.cmpread b { font-weight: 600; font-size: 17px; }
+.cmpread span { color: var(--muted); font-size: 14px; }
+.cmpchart, .cmpchart svg { height: 200px; }
+.chart .oldline { stroke: var(--faint); stroke-dasharray: 5 4; stroke-width: 2; }
+.chart .oldbar { fill: var(--faint); }
+.legend i.dash { border-top-style: dashed; }
+details.allex summary { padding: 12px 0; }
+
+/* v1.3: exercise menu right in the workout */
+.exmeta { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.exmeta i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.exname .exmeta { font-size: 13px; color: var(--muted); }
+.xmbtn { font-size: 20px; line-height: 1; letter-spacing: 0.04em; }
+.tplname { border: 0; background: none; padding: 0; text-align: left; min-width: 0; display: flex; flex-direction: column; gap: 2px; color: var(--ink); font: inherit; }
+.tplname .t2 { font-size: 13.5px; color: var(--muted); }
+.xmhead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.xmt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.xmt b { font-family: var(--f-display); font-weight: 800; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.05; overflow-wrap: anywhere; }
+.xmt .exmeta { font-size: 13.5px; color: var(--muted); }
+.menulist { display: flex; flex-direction: column; gap: 8px; }
+.menuitem { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--raised); color: var(--ink); border-radius: 14px; padding: 12px 14px; font: inherit; }
+.menuitem .mi { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--accent); font-size: 18px; font-weight: 700; }
+.menuitem .main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.menuitem .t1 { font-weight: 700; }
+.menuitem .t2 { font-size: 13.5px; color: var(--muted); }
+.menuitem.half { padding: 10px 12px; }
+.menuitem:disabled { opacity: 0.35; }
+.menuitem.danger { border-color: rgba(255, 79, 69, 0.35); }
+.menuitem.danger .mi { color: var(--neg); }
+.menuitem.danger.armed { background: rgba(255, 79, 69, 0.14); border-color: var(--neg); }
+.menuitem.danger.armed .t1 { color: var(--neg); }
+.pickrow.cur { opacity: 0.6; }
+
+/* v1.3: own food as a nutrition label */
+.ntab { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); }
+.nrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 10px 7px 14px; border-bottom: 1px solid var(--line); min-height: 52px; }
+.nrow:last-child { border-bottom: 0; }
+.nrow > span:first-child { font-weight: 600; min-width: 0; }
+.nrow.sub > span:first-child { font-weight: 400; color: var(--muted); padding-left: 14px; font-size: 14.5px; }
+.nin { display: flex; align-items: center; gap: 6px; }
+.nin input { width: 86px; height: 38px; text-align: right; font-variant-numeric: tabular-nums; padding: 0 10px; font-size: 16px; }
+.nin.two { gap: 4px; }
+.nin.two input { width: 68px; }
+.nin.two i { width: auto; margin-right: 4px; }
+.nin i { font-style: normal; color: var(--muted); width: 12px; font-size: 14px; }
+#foodPorTop:empty { display: none; }
+#foodPorTop .field { margin: 0; }
+.xline { margin: 0; font-size: 13.5px; }
+.xline span { color: var(--faint); }
+.linkbtn { border: 0; background: none; color: var(--accent); font-weight: 700; font-size: 14.5px; padding: 4px 0; text-align: left; align-self: flex-start; }
+.nin input { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font: inherit; font-size: 16px; font-weight: 600; }
+.nin input:focus { outline: none; border-color: var(--accent); }
 </style>
 
 <div class="app" id="app"><main class="view" id="view"></main></div>
@@ -573,8 +662,17 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       </div>
       <span class="hint" id="exKindHint"></span></div>
     <label class="check" id="exCaliWrap"><input type="checkbox" id="exCali"><span data-t="Calisthenics exercise – shows up in the Calisthenics menu|Calisthenics-Übung – erscheint im Calisthenics-Menü">Calisthenics exercise</span></label>
+    <p class="hint" id="exAllHint" hidden data-t="Changes apply to every workout with this exercise – your history moves along.|Änderungen gelten für alle Trainings mit dieser Übung – dein Verlauf zieht mit um."></p>
     <div class="err" id="exErr" role="alert"></div>
     <div class="btnrow"><button type="submit" class="btn primary grow1" id="exSave" data-t="Save|Speichern">Save</button><button type="button" class="btn danger" id="exDelete" hidden>Delete</button></div>
+  </form>
+</div>
+
+<div class="sheet" id="xmSheet" role="dialog" aria-modal="true" aria-labelledby="xmTitle" hidden>
+  <form novalidate onsubmit="return false">
+    <div class="grip" aria-hidden="true"></div>
+    <div class="sheethead"><div class="xmhead" id="xmHead"></div><button type="button" class="mbtn" data-close data-ta="Close|Schließen">✕</button></div>
+    <div class="menulist" id="xmList"></div>
   </form>
 </div>
 
@@ -620,17 +718,33 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     <p class="hint" id="foodOffHint" hidden></p>
     <p class="hint" id="foodBaseHint" data-t="Prefilled with typical values – change them to what's on your pack.|Mit typischen Werten vorausgefüllt – ändere sie auf die Angaben deiner Packung." hidden></p>
     <div class="field"><label class="label" for="foodName" data-t="Name|Name">Name</label><input id="foodName" maxlength="50" autocomplete="off" data-tp="e.g. Protein pudding, My granola|z. B. Proteinpudding, Mein Müsli"></div>
-    <span class="label" data-t="Per 100 g (from the nutrition label)|Pro 100 g (von der Nährwerttabelle)">Per 100 g</span>
-    <div class="three">
-      <div class="field"><label class="hint" for="foodP" data-t="Protein g|Eiweiß g">Protein g</label><input id="foodP" inputmode="decimal" autocomplete="off" placeholder="0"></div>
-      <div class="field"><label class="hint" for="foodF" data-t="Fat g|Fett g">Fat g</label><input id="foodF" inputmode="decimal" autocomplete="off" placeholder="0"></div>
-      <div class="field"><label class="hint" for="foodC" data-t="Carbs g|KH g">Carbs g</label><input id="foodC" inputmode="decimal" autocomplete="off" placeholder="0"></div>
-    </div>
-    <div class="two">
-      <div class="field"><label class="hint" for="foodKcal" data-t="kcal (optional)|kcal (optional)">kcal (optional)</label><input id="foodKcal" inputmode="decimal" autocomplete="off" data-tp="calculated|wird berechnet"></div>
-      <div class="field"><label class="hint" for="foodPc" data-t="1 piece = g (optional)|1 Stück = g (optional)">1 piece = g</label><input id="foodPc" inputmode="decimal" autocomplete="off" data-tp="e.g. 60|z. B. 60"></div>
+    <div class="field"><label class="hint" for="foodBrand" data-t="Brand (optional)|Marke (optional)">Brand (optional)</label><input id="foodBrand" maxlength="40" autocomplete="off" data-tp="e.g. Ehrmann|z. B. Ehrmann"></div>
+    <div class="field"><span class="label" data-t="Nutrition facts per|Nährwerte pro">Nutrition facts per</span>
+      <div class="seg three" role="group" id="foodPerSeg">
+        <button type="button" data-per="g" aria-pressed="true">100 g</button>
+        <button type="button" data-per="ml" aria-pressed="false">100 ml</button>
+        <button type="button" data-per="por" aria-pressed="false" data-t="Serving|Portion">Serving</button>
+      </div>
+      <span class="hint" id="foodPerHint" data-t="Copy the values from the nutrition label on the pack.|Übertrage die Werte von der Nährwerttabelle auf der Packung.">Copy the values from the nutrition label on the pack.</span></div>
+    <div id="foodPorTop"></div>
+    <div class="ntab" role="group" aria-labelledby="foodTitle">
+      <label class="nrow" for="foodKcal"><span data-t="Energy|Energie">Energy</span><span class="nin two"><input id="foodKcal" inputmode="decimal" autocomplete="off" data-tp="auto|auto"><i>kcal</i><input id="foodKj" inputmode="decimal" autocomplete="off" placeholder="–" data-ta="Energy in kJ (optional)|Energie in kJ (optional)"><i>kJ</i></span></label>
+      <label class="nrow" for="foodF"><span data-t="Fat|Fett">Fat</span><span class="nin"><input id="foodF" inputmode="decimal" autocomplete="off" placeholder="0"><i>g</i></span></label>
+      <label class="nrow sub" for="foodSf"><span data-t="of which saturates|davon gesättigte Fettsäuren">of which saturates</span><span class="nin"><input id="foodSf" inputmode="decimal" autocomplete="off" placeholder="–"><i>g</i></span></label>
+      <label class="nrow" for="foodC"><span data-t="Carbohydrate|Kohlenhydrate">Carbohydrate</span><span class="nin"><input id="foodC" inputmode="decimal" autocomplete="off" placeholder="0"><i>g</i></span></label>
+      <label class="nrow sub" for="foodSu"><span data-t="of which sugars|davon Zucker">of which sugars</span><span class="nin"><input id="foodSu" inputmode="decimal" autocomplete="off" placeholder="–"><i>g</i></span></label>
+      <label class="nrow" for="foodFi"><span data-t="Fibre|Ballaststoffe">Fibre</span><span class="nin"><input id="foodFi" inputmode="decimal" autocomplete="off" placeholder="–"><i>g</i></span></label>
+      <label class="nrow" for="foodP"><span data-t="Protein|Eiweiß">Protein</span><span class="nin"><input id="foodP" inputmode="decimal" autocomplete="off" placeholder="0"><i>g</i></span></label>
+      <label class="nrow" for="foodSa"><span data-t="Salt|Salz">Salt</span><span class="nin"><input id="foodSa" inputmode="decimal" autocomplete="off" placeholder="–"><i>g</i></span></label>
     </div>
     <div class="preview" id="foodPreview" aria-live="polite"></div>
+    <div class="field"><span class="label" data-t="Amounts (optional)|Mengen (optional)">Amounts (optional)</span>
+      <div class="three">
+        <div class="field"><label class="hint" for="foodPc" data-t="1 piece = g|1 Stück = g">1 piece = g</label><input id="foodPc" inputmode="decimal" autocomplete="off" data-tp="e.g. 60|z. B. 60"></div>
+        <div id="foodPorLow"><div class="field" id="foodPorField"><label class="hint" for="foodPor" data-t="1 serving = g|1 Portion = g">1 serving = g</label><input id="foodPor" inputmode="decimal" autocomplete="off" data-tp="e.g. 40|z. B. 40"></div></div>
+        <div class="field"><label class="hint" for="foodPack" data-t="1 pack = g|1 Packung = g">1 pack = g</label><input id="foodPack" inputmode="decimal" autocomplete="off" data-tp="e.g. 500|z. B. 500"></div>
+      </div>
+      <span class="hint" data-t="Then you can type “1 piece”, “1 serving” or “half a pack” in a meal.|Dann kannst du in einer Mahlzeit „1 Stück“, „1 Portion“ oder „halbe Packung“ eintippen.">Then you can type “1 piece”, “1 serving” or “half a pack”.</span></div>
     <div class="field"><label class="hint" for="foodAlias" data-t="Other names, comma separated (optional)|Andere Namen, mit Komma (optional)">Other names</label><input id="foodAlias" maxlength="120" autocomplete="off" data-tp="e.g. pudding, protein dessert|z. B. Pudding, Proteindessert"></div>
     <div class="err" id="foodErr" role="alert"></div>
     <div class="btnrow"><button type="submit" class="btn primary grow1" data-t="Save|Speichern">Save</button><button type="button" class="btn danger" id="foodDelete" hidden>Delete</button></div>
@@ -726,6 +840,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   const groupName = (g) => (LANG === "de" ? g : GROUP_EN[g] || g);
   const GROUP_COLORS = { "Brust": "#FF5FA8", "Rücken": "#3FA9FF", "Schultern": "#C77DFF", "Beine": "#2EE6D6", "Po": "#FFB4A2", "Bizeps": "#FF8A3D", "Trizeps": "#F5C04A", "Bauch": "#7FD1FF", "Ganzkörper": "#D4D4D8" };
   const kindText = (k) => (k === "kg" ? T("Weight × reps", "Gewicht × Wdh.") : k === "bw" ? T("Bodyweight", "Körpergewicht") : T("Hold time", "Haltezeit"));
+  const kindShort = (k) => (k === "kg" ? T("kg × reps", "kg × Wdh.") : k === "bw" ? T("bodyweight", "Körpergewicht") : T("hold time", "Haltezeit"));
   const kindHint = (k) => (k === "kg" ? T("Weight and reps per set – e.g. bench press.", "Gewicht und Wiederholungen pro Satz – z. B. Bankdrücken.")
     : k === "bw" ? T("Reps, optionally with added weight – e.g. pull-ups.", "Wiederholungen, optional mit Zusatzgewicht – z. B. Klimmzüge.")
       : T("Seconds per set – e.g. plank or handstand.", "Sekunden pro Satz – z. B. Plank oder Handstand."));
@@ -986,9 +1101,10 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       FOODS.push({ id, cat, de: de.split(",")[0], en: en.split(",")[0], kcal, p, f, c, u, def, rank: i, raw: st.some((t) => t.some((w) => RAW.has(w))), syn: st.map((t) => t.filter((w) => !RAW.has(w))).filter((t) => t.length) });
     });
     for (const x of db.foods) {
-      const u = x.pc > 0 ? { pc: +x.pc } : {};
-      const names = [x.name].concat(String(x.alias || "").split(",").filter(Boolean));
-      FOODS.unshift({ id: x.id, cat: "own", de: x.name, en: x.name, kcal: +x.kcal || Math.round(4 * x.p + 4 * x.c + 9 * x.f), p: +x.p || 0, f: +x.f || 0, c: +x.c || 0, u, def: x.pc > 0 ? "pc" : "g", rank: -1, own: true, syn: names.map(tokens).filter((t) => t.length) });
+      const u = {}; if (x.pc > 0) u.pc = +x.pc; if (x.por > 0) u.portion = +x.por; if (x.pack > 0) u.pack = +x.pack;
+      const names = [x.name].concat(x.brand ? [`${x.brand} ${x.name}`] : [], String(x.alias || "").split(",").filter((a) => a.trim()));
+      const ex = ["sf", "su", "fi", "sa"].map((k) => (x[k] != null && x[k] !== "" ? +x[k] : null));
+      FOODS.unshift({ id: x.id, cat: "own", de: x.name, en: x.name, brand: x.brand || "", kcal: +x.kcal || Math.round(4 * x.p + 4 * x.c + 9 * x.f), p: +x.p || 0, f: +x.f || 0, c: +x.c || 0, u, def: u.pc ? "pc" : u.portion ? "portion" : "g", rank: -1, own: true, liq: !!x.liq, x: ex.some((v) => v != null) ? ex : null, syn: names.map(tokens).filter((t) => t.length) });
     }
     FOOD_BY = new Map(FOODS.map((x) => [x.id, x]));
   }
@@ -1011,8 +1127,8 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
         else if (b.startsWith(a) && a.length >= 3) sc = 74 - Math.min(20, (b.length - a.length) * 0.6);
         else if (a.endsWith(b) && b.length >= 4) sc = 62;
         else if (b.endsWith(a) && a.length >= 5) sc = 56;
-      } else if (s.every((w) => q.some((v) => v === w || (w.length >= 3 && v.startsWith(w))))) sc = 72 + s.length * 3;
-      else if (q.every((v) => s.some((w) => w === v || (v.length >= 3 && w.startsWith(v))))) sc = 66;
+      } else if (s.every((w) => q.some((v) => v === w || (w.length >= 3 && v.startsWith(w))))) sc = 72 + s.length * 3 - 6 * s.filter((w) => !q.includes(w)).length; // a word only matched as the start of a longer word counts less
+      else if (q.every((v) => s.some((w) => w === v || (v.length >= 3 && w.startsWith(v))))) sc = x.own ? 85 : 66; // every typed word is in one of your own foods (e.g. brand + name)
       else {
         const hit = q.filter((v) => s.some((w) => w === v || (v.length >= 4 && (w.startsWith(v) || v.startsWith(w))) || (w.length >= 4 && v.endsWith(w)))).length;
         if (hit) sc = 40 + 20 * hit / Math.max(q.length, s.length);
@@ -1023,18 +1139,22 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     return best ? best + (x.own ? 3 : 0) - x.rank * 0.001 : 0;
   }
   let lastScore = 0;
-  function matchFood(q) {
+  /* "erdnuss butter", "protein riegel": also try the words written together */
+  const joinedQ = (words) => (words && words.length >= 2 && words.length <= 3 ? [stem(words.join(""))] : null);
+  function matchFood(q, words) {
     lastScore = 0;
     if (!q.length) return null;
+    const qj = joinedQ(words);
     let best = null, bs = 0;
-    for (const x of FOODS) { const s = scoreFood(q, x); if (s > bs) { bs = s; best = x; } }
+    for (const x of FOODS) { const s = Math.max(scoreFood(q, x), qj ? scoreFood(qj, x) : 0); if (s > bs) { bs = s; best = x; } }
     lastScore = bs;
     return bs >= 50 ? best : null;
   }
   function searchFoods(text, limit) {
     const q = tokens(text);
     if (!q.length) return FOODS.slice(0, limit || 400);
-    const res = FOODS.map((x) => ({ x, s: scoreFood(q, x) || (fold(foodName(x)).includes(fold(text)) ? 45 : 0) })).filter((r) => r.s > 0).sort((a, b) => b.s - a.s);
+    const qj = joinedQ(fold(text).replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter((w) => w && !/^\d+$/.test(w)));
+    const res = FOODS.map((x) => ({ x, s: Math.max(scoreFood(q, x), qj ? scoreFood(qj, x) : 0) || (fold(foodName(x)).includes(fold(text)) ? 45 : 0) })).filter((r) => r.s > 0).sort((a, b) => b.s - a.s);
     const top = res.length ? res[0].s : 0, min = top >= 70 ? 55 : 0; // a good hit hides the loose "contains protein" matches
     return res.filter((r) => r.s >= min).slice(0, limit || 60).map((r) => r.x);
   }
@@ -1056,13 +1176,18 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       name.push(tk);
     });
     if (!name.length && unit) { name.push(toks[unit.i]); unit = null; }
+    // "protein riegel", "schoko riegel": the unit word is really the end of the food's name
+    if (unit && name.length && name.length <= 2 && toks[unit.i - 1] === name[name.length - 1]) {
+      const w = name.concat(toks[unit.i]); matchFood([stem(w.join(""))]);
+      if (lastScore >= 99) { name.push(toks[unit.i]); unit = null; }
+    }
     if (unit) { const near = nums.find((n) => n.i === unit.i - 1) || nums.find((n) => n.i < unit.i) || nums[0]; qty = near ? near.v : 1; }
     else if (nums.length) qty = nums[0].v;
     if (nums.length > 1 && !unit) qty = nums.reduce((a, n) => a * n.v, 1);
     const key = chunkKey(raw);
     const q = name.map(stem).filter((w) => w.length > 1 || name.length === 1);
     const fixed = ov && ov[key] && FOOD_BY.get(ov[key]);
-    const food = fixed || matchFood(q);
+    const food = fixed || matchFood(q, name.filter((w) => !FILLER.has(w)));
     const item = { raw, key, food, guess: !fixed && !!food && lastScore < 78, qtyIn: qty, unitIn: unit && unit.u, name: name.join(" ") };
     if (!food) return item;
     let u = unit ? unit.u : null, n = qty;
@@ -1097,7 +1222,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   const r1 = (v) => Math.round(v * 10) / 10;
   const r2 = (v) => Math.round(v * 100) / 100;
   const isMass = (u) => u === "g" || u === "ml";
-  const isLiq = (food) => !!food && (food.cat === "drink" || !!(food.u.glass || food.u.bottle));
+  const isLiq = (food) => !!food && (food.liq || food.cat === "drink" || !!(food.u.glass || food.u.bottle));
   function unitW(id, u) {
     if (isMass(u)) return 1;
     const food = FOOD_BY.get(id);
@@ -1109,6 +1234,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     if (unit === "kg" || unit === "l") { unit = unit === "kg" ? "g" : "ml"; qty = g; }
     const it = { id: food.id, n: foodName(food), qty: r2(qty), unit, g: r1(g), b: [food.kcal, food.p, food.f, food.c] };
     if (!isMass(unit)) it.w = qty > 0 ? g / qty : unitW(food.id, unit);
+    if (food.x) it.x = food.x.slice();
     return calcItem(it);
   }
   const itemFromParse = (r) => mkItem(r.food, r.qty, r.unit, r.g);
@@ -1149,6 +1275,13 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     return setItemQty(it, n);
   }
   const cloneItem = (it) => JSON.parse(JSON.stringify(it));
+  /* sat. fat, sugar, fibre, salt – only known for own foods (from the pack) and Open Food Facts products */
+  function extrasOf(items) {
+    const t = [0, 0, 0, 0], have = [0, 0, 0, 0]; let n = 0;
+    for (const it of items) { const x = it.x; if (!x) continue; n++; x.forEach((v, k) => { if (v != null) { t[k] += (v * (+it.g || 0)) / 100; have[k]++; } }); }
+    return { n, t, have };
+  }
+  const extrasLine = (e) => [T("sat. fat", "ges. Fett"), T("sugar", "Zucker"), T("fibre", "Ballaststoffe"), T("salt", "Salz")].map((lab, k) => (e.have[k] ? `${lab} ${gfmt(e.t[k])}` : "")).filter(Boolean).join(" · ");
 
   const macroLine1 = (m) => `${T("P", "E")} ${nf1.format(m.p)} · ${T("F", "F")} ${nf1.format(m.f)} · ${T("C", "KH")} ${nf1.format(m.c)}`;
   const gfmt = (v) => `${nf.format(Math.round(v * 10) / 10)} g`;
@@ -1714,7 +1847,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   const state = {
     stack: [{ v: "hub" }], enter: false, armed: null, histFilter: "all", histN: 60,
     pRange: "12w", pMetric: "vol", gWin: "week", exRange: "all", exMetric: {}, exLv: {}, spRange: "12w", spMetric: {}, exAll: false,
-    pick: null, full: null, foodDay: null, fRange: "14d", fMetric: "kcal", exQ: "", foodQ: ""
+    pick: null, full: null, foodDay: null, fRange: "14d", fMetric: "kcal", exQ: "", foodQ: "", repType: "m", repCmp: "prev", repMetric: "dur", xm: null
   };
   let charts = [];
 
@@ -1828,7 +1961,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   const viewLabel = (e) => ({
     hub: T("Menu", "Menü"), live: T("Workout", "Training"), session: T("Workout", "Training"), history: T("History", "Verlauf"), progress: T("Progress", "Fortschritt"),
     exercise: T("Exercise", "Übung"), workouts: "Workouts", tpl: "Workout", settings: T("Settings", "Einstellungen"), exlist: T("Exercises", "Übungen"),
-    sport: e && SPORTS[e.p] ? sportName(e.p) : "", cali: "Calisthenics", food: T("Nutrition", "Ernährung"), meal: T("Meal", "Mahlzeit"), foods: T("Foods", "Lebensmittel"), mymeals: T("My meals", "Meine Mahlzeiten")
+    sport: e && SPORTS[e.p] ? sportName(e.p) : "", cali: "Calisthenics", food: T("Nutrition", "Ernährung"), meal: T("Meal", "Mahlzeit"), foods: T("Foods", "Lebensmittel"), mymeals: T("My meals", "Meine Mahlzeiten"), reports: T("Reports", "Berichte"), report: T("Report", "Bericht")
   }[e && e.v] || T("Back", "Zurück"));
   const backBar = (label) => { const prev = state.stack[state.stack.length - 2]; const t = label || (prev ? viewLabel(prev) : T("Menu", "Menü")); return `<button class="backbtn" data-action="back"><span aria-hidden="true">‹</span>${esc(t)}</button>`; };
   function navRow(action, arg, title, sub, val, b) {
@@ -1888,6 +2021,10 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     const kcal7 = Array.from({ length: 7 }, (_, k) => mealsTot(db.meals.filter((m) => m.date === addDays(today, k - 6))).p);
     // best calisthenics skill levels for the tile
     const skills = CALI_EX.filter((c) => c[6]).map((c) => ({ x: exOf("c:" + c[0]), top: topLevel("c:" + c[0]) })).filter((r) => r.top >= 0).sort((a, b) => b.top / b.x.lv.length - a.top / a.x.lv.length).slice(0, 2);
+    // reports: last finished month, the running one, and a note when a new report is ready
+    const cm = periodOf("m", today), lm = periodShift(cm, -1), lr = repStats(lm.from, lm.to), pm = periodShift(lm, -1), prr = repStats(pm.from, pm.to), cr = repStats(cm.from, today);
+    const repSp = Array.from({ length: 8 }, (_, k) => { const q = periodShift(cm, k - 8); return repStats(q.from, q.to).dur; });
+    const nr = newReports("repNoted");
     const mt = (sp, val, sub, empty) => `<button class="mtile" data-action="sport" data-arg="${sp}"><span class="tile-t"><i style="background:${SPORTS[sp].color}"></i>${esc(sportName(sp))}</span>${val ? `<span class="tile-v">${val}</span><span class="tile-s">${sub}</span>` : `<span class="tile-s">${empty}</span>`}</button>`;
     return `
       <header class="hubhead">
@@ -1897,6 +2034,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       ${live ? `<button class="notice live" data-action="resume"><span><span class="dot" aria-hidden="true"></span>${esc(T("Workout running", "Training läuft"))} · ${esc(draft.name || (draft.sport === "cali" ? "Calisthenics" : T("Free workout", "Freies Training")))} · <span data-clock>${clock((Date.now() - draft.start) / 1000)}</span></span><span>${esc(T("Resume", "Weiter"))} ›</span></button>`
         : `<button class="addbig" data-action="start"><span aria-hidden="true">+</span>${esc(T("Start workout", "Training starten"))}</button>`}
       ${db.sessions.length >= 5 && (bk == null || bk > 14) ? `<button class="notice" data-action="export-json">${esc(T("Last backup", "Letztes Backup"))}: ${esc(lastBackupText())} · ${esc(T("Save one now", "Jetzt sichern"))} ›</button>` : ""}
+      ${nr.length ? `<button class="notice live report" data-action="rep-new"><span><span class="dot" aria-hidden="true"></span>${esc(nr.length === 1 ? T("New report", "Neuer Bericht") : T("New reports", "Neue Berichte"))}: <b>${esc(`${repKindName(nr[nr.length - 1].type)} ${periodName(nr[nr.length - 1])}`)}</b>${nr.length > 1 ? ` ${esc(T(`+ ${nr.length - 1} more`, `+ ${nr.length - 1} weitere`))}` : ""}</span><span>${esc(T("Open", "Ansehen"))} ›</span></button>` : ""}
       <nav class="tiles" aria-label="${esc(T("Menu", "Menü"))}">
         <button class="tile" data-action="nav" data-arg="progress">
           <span class="tile-l"><span class="tile-t">${esc(T("Gym progress", "Gym-Fortschritt"))}</span>
@@ -1913,6 +2051,12 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
             ${meals.length ? `<span class="tile-v">${nf0.format(fd.kcal)} kcal <span class="tile-s">${esc(T("today", "heute"))}</span></span><span class="tile-s">${esc(macroLine(fd))} g</span>`
               : `<span class="tile-s">${esc(T("Type what you ate – see protein, fat and carbs", "Eintippen, was du gegessen hast – Eiweiß, Fett und KH sehen"))}</span>`}</span>
           ${spark(kcal7, "var(--pos)")}<span class="chev" aria-hidden="true">›</span></button>
+        <button class="tile" data-action="rep-list" data-arg="m">
+          <span class="tile-l"><span class="tile-t">${esc(T("Reports", "Berichte"))}${nr.length ? `<span class="tag attn">${esc(T("New", "Neu"))}</span>` : ""}</span>
+            ${lr.n ? `<span class="tile-v">${esc(periodName(lm))} <span class="tile-s">${esc(durTxt(lr.dur))}</span></span><span class="tile-s">${esc(pl(lr.n, "session"))}${lr.prs.length ? ` · ${esc(pl(lr.prs.length, "record"))}` : ""} · ${dlt(lr.dur, prr.dur)} ${esc(T("vs.", "vs."))} ${esc(periodShort(pm))}</span>`
+              : cr.n ? `<span class="tile-v">${esc(periodName(cm))} <span class="tile-s">${esc(T("so far", "bisher"))}</span></span><span class="tile-s">${esc(pl(cr.n, "session"))} · ${esc(durTxt(cr.dur))}</span>`
+                : `<span class="tile-s">${esc(T("Month, quarter, half-year and year – with comparisons", "Monat, Quartal, Halbjahr und Jahr – mit Vergleichen"))}</span>`}</span>
+          ${spark(repSp, "var(--accent)")}<span class="chev" aria-hidden="true">›</span></button>
       </nav>
       <div class="minitiles three">
         ${mt("run", runM.length ? `${nf1.format(runM.reduce((a, s) => a + (s.dist || 0), 0))} km` : "", `${esc(T("in", "im"))} ${esc(mName)}`, T("Pace & distance", "Pace & Distanz"))}
@@ -1968,8 +2112,8 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     const armed = state.armed === `ex-del:${i}`;
     const lvSel = hasLv(x) ? `<label class="lvrow"><span class="label">${esc(T("Level", "Stufe"))}</span><select class="psel lvsel" data-i="${i}" aria-label="${esc(T("Level", "Stufe"))}">${x.lv.map((_, k) => `<option value="${k}"${lvKey(x, e.lv) === k ? " selected" : ""}>${k + 1}. ${esc(lvName(x, k))}</option>`).join("")}</select></label>` : "";
     return `<section class="card excard" data-ex="${i}">
-      <div class="exhead">${badgeEx(x)}<button type="button" class="exname" data-action="ex" data-arg="${esc(e.id)}"><b>${esc(exName(x))}</b><span>${esc(groupName(x.group))}${e.tr ? ` · ${esc(T("Target", "Ziel"))} ${esc(e.tr)} ${tm ? "s" : T("reps", "Wdh.")}` : ""}</span></button>
-        <span class="exbtns"><button type="button" class="mbtn sm" data-action="ex-move" data-arg="${i}:-1"${i === 0 ? " disabled" : ""} aria-label="${esc(T("Move up", "Nach oben"))}">↑</button><button type="button" class="mbtn sm" data-action="ex-move" data-arg="${i}:1"${i === d.ex.length - 1 ? " disabled" : ""} aria-label="${esc(T("Move down", "Nach unten"))}">↓</button>${armed ? `<button type="button" class="btn sm danger armed" data-action="ex-del" data-arg="${i}">${esc(T("Remove?", "Weg?"))}</button>` : `<button type="button" class="mbtn sm" data-action="ex-del" data-arg="${i}" aria-label="${esc(T("Remove exercise", "Übung entfernen"))}">✕</button>`}</span></div>
+      <div class="exhead">${badgeEx(x)}<button type="button" class="exname" data-action="xm" data-arg="d:${i}" aria-label="${esc(T(`${exName(x)} – options: swap, edit, move, remove`, `${exName(x)} – Optionen: tauschen, bearbeiten, verschieben, entfernen`))}"><b>${esc(exName(x))}</b><span class="exmeta"><i style="background:${GROUP_COLORS[x.group] || "#D4D4D8"}"></i>${esc(groupName(x.group))} · ${esc(kindShort(x.kind))}${e.tr ? ` · ${esc(T("Target", "Ziel"))} ${esc(e.tr)} ${tm ? "s" : T("reps", "Wdh.")}` : ""}</span></button>
+        <span class="exbtns">${armed ? `<button type="button" class="btn sm danger armed" data-action="ex-del" data-arg="${i}">${esc(T("Remove?", "Weg?"))}</button>` : `<button type="button" class="mbtn sm xmbtn" data-action="xm" data-arg="d:${i}" aria-label="${esc(T("Exercise options", "Optionen zur Übung"))}">⋯</button>`}</span></div>
       ${lvSel}
       <p class="lasttime">${lastTxt}</p>
       <div class="sets">
@@ -1998,6 +2142,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       </header>
       ${d.ex.length ? d.ex.map((e, i) => exCard(e, i, d)).join("") : emptyBox(T("No exercise yet", "Noch keine Übung"), esc(T("Add exercises – or start a saved workout next time.", "Füge Übungen hinzu – oder starte beim nächsten Mal direkt ein gespeichertes Workout.")))}
       <button class="addex" data-action="pick-open" data-arg="draft">+ ${esc(T("Add exercise", "Übung hinzufügen"))}</button>
+      ${d.ex.length ? `<p class="hint">${esc(T("Wrong exercise or muscle group? Tap the exercise name or ⋯ to swap, edit, move or remove it.", "Falsche Übung oder Muskelgruppe? Tippe auf den Übungsnamen oder ⋯, um sie zu tauschen, zu bearbeiten, zu verschieben oder zu entfernen."))}</p>` : ""}
       <details class="more" id="liveMore"${d.moreOpen ? " open" : ""}><summary>${esc(T("Date, duration & note", "Datum, Dauer & Notiz"))}</summary><div class="morebody">
         <div class="two"><div class="field"><label class="label" for="liveDate">${esc(T("Date", "Datum"))}</label><input type="date" id="liveDate" value="${esc(d.date)}" max="${todayISO()}"></div><div class="field"><label class="label" for="liveTime">${esc(T("Start", "Beginn"))}</label><input type="time" id="liveTime" value="${esc(d.time)}"></div></div>
         <div class="field"><label class="label" for="liveDur">${esc(T("Duration in minutes", "Dauer in Minuten"))}</label><input id="liveDur" inputmode="numeric" autocomplete="off" placeholder="${edit ? "" : esc(T("automatic from the timer", "automatisch aus der Zeit"))}" value="${esc(d.dur)}"></div>
@@ -2252,8 +2397,8 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     const rows = t.items.map((it, i) => {
       const x = exOf(it.ex), last = lastFor(it.ex, null, it.lv), armed = state.armed === `tpl-ex:${i}`;
       return `<div class="tplrow">
-        <div class="top">${badgeEx(x)}<div style="min-width:0"><div class="t1">${esc(exName(x))}${hasLv(x) ? ` <span class="tag">${esc(lvName(x, lvKey(x, it.lv)))}</span>` : ""}</div><div class="t2">${last ? `${esc(T("Last", "Zuletzt"))}: ${esc(setsSummary(last.e, x.kind))}` : esc(groupName(x.group))}</div></div>
-          <span class="exbtns"><button class="mbtn sm" data-action="tpl-move" data-arg="${i}:-1"${i === 0 ? " disabled" : ""} aria-label="${esc(T("Move up", "Nach oben"))}">↑</button><button class="mbtn sm" data-action="tpl-move" data-arg="${i}:1"${i === t.items.length - 1 ? " disabled" : ""} aria-label="${esc(T("Move down", "Nach unten"))}">↓</button>${armed ? `<button class="btn sm danger armed" data-action="tpl-ex-del" data-arg="${i}">${esc(T("Remove?", "Weg?"))}</button>` : `<button class="mbtn sm" data-action="tpl-ex-del" data-arg="${i}" aria-label="${esc(T("Remove", "Entfernen"))}">✕</button>`}</span></div>
+        <div class="top">${badgeEx(x)}<button type="button" class="tplname" data-action="xm" data-arg="t:${i}"><span class="t1">${esc(exName(x))}${hasLv(x) ? ` <span class="tag">${esc(lvName(x, lvKey(x, it.lv)))}</span>` : ""}</span><span class="t2 exmeta"><i style="background:${GROUP_COLORS[x.group] || "#D4D4D8"}"></i>${esc(groupName(x.group))} · ${esc(kindShort(x.kind))}${last ? ` · ${esc(T("last", "zuletzt"))} ${esc(setsSummary(last.e, x.kind))}` : ""}</span></button>
+          <span class="exbtns">${armed ? `<button class="btn sm danger armed" data-action="tpl-ex-del" data-arg="${i}">${esc(T("Remove?", "Weg?"))}</button>` : `<button class="mbtn sm xmbtn" data-action="xm" data-arg="t:${i}" aria-label="${esc(T("Exercise options", "Optionen zur Übung"))}">⋯</button>`}</span></div>
         <div class="ctl"><span class="stepper"><span class="label">${esc(T("Sets", "Sätze"))}</span><button class="mbtn sm" data-action="tpl-sets" data-arg="${i}:-1" aria-label="${esc(T("One set less", "Ein Satz weniger"))}"${it.sets <= 1 ? " disabled" : ""}>−</button><b>${it.sets}</b><button class="mbtn sm" data-action="tpl-sets" data-arg="${i}:1" aria-label="${esc(T("One set more", "Ein Satz mehr"))}">+</button></span>
           <span class="stepper"><label class="label" for="rep-${i}">${esc(x.kind === "time" ? T("Sec", "Sek.") : T("Reps", "Wdh."))}</label><input class="repin" id="rep-${i}" data-i="${i}" value="${esc(it.reps || "")}" placeholder="${x.kind === "time" ? "20–30" : "8–12"}" maxlength="9" autocomplete="off"></span>
           ${hasLv(x) ? `<select class="psel tpllv" data-i="${i}" aria-label="${esc(T("Level", "Stufe"))}">${x.lv.map((_, k) => `<option value="${k}"${lvKey(x, it.lv) === k ? " selected" : ""}>${k + 1}. ${esc(lvName(x, k))}</option>`).join("")}</select>` : ""}</div>
@@ -2472,12 +2617,13 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
         ${g.kcal ? `<div class="bar"><span style="width:${Math.min(100, (t.kcal / g.kcal) * 100).toFixed(1)}%;background:var(--pos)"></span></div>` : ""}
       </section>
       ${macroBoxes(t, g)}
+      ${(() => { const ex = extrasOf(meals.flatMap((x) => x.items)); return ex.n ? `<p class="hint xline">${esc(extrasLine(ex))} <span>· ${esc(T("only foods with these values", "nur Lebensmittel mit Angaben"))}</span></p>` : ""; })()}
       <button class="addbig" data-action="meal-new"><span aria-hidden="true">+</span>${esc(T("Add meal", "Mahlzeit eintragen"))}</button>
       <section class="sec">${rows || `<p class="hint" style="padding:6px 0">${esc(T("Nothing logged for this day yet.", "Für diesen Tag ist noch nichts eingetragen."))}</p>`}</section>
       ${myMeals}
       ${again ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Again?", "Nochmal?"))}</h2><span class="label">${esc(T("Recent meals", "Letzte Mahlzeiten"))}</span></div>${again}</section>` : ""}
       ${chart ? `<div class="ctlrow">${pills("f-metric", m, [["kcal", "kcal"], ["p", T("Protein", "Eiweiß")]], T("Metric", "Kennzahl"))}${rangePills("f-range", state.fRange, ["14d", "30d"])}</div>${chart}` : ""}
-      <section class="sec">${navRow("nav", "foods", esc(T("Foods", "Lebensmittel")), esc(T(`${FOODS.length} foods built in + search Open Food Facts`, `${FOODS.length} Lebensmittel eingebaut + Suche in Open Food Facts`)))}${navRow("nav", "settings", esc(T("Daily goals", "Tagesziele")), g.kcal || g.p ? esc(`${g.kcal ? `${nf0.format(g.kcal)} kcal` : ""}${g.kcal && g.p ? " · " : ""}${g.p ? `${g.p} g ${T("protein", "Eiweiß")}` : ""}`) : esc(T("Not set – in Settings", "Nicht gesetzt – in den Einstellungen")))}</section>
+      <section class="sec">${navRow("food-new", "", esc(T("Add your own food", "Eigenes Lebensmittel anlegen")), esc(T(`Calories, protein, fat, carbs, sugar … from the pack${db.foods.length ? ` · ${db.foods.length} saved` : ""}`, `Kalorien, Eiweiß, Fett, KH, Zucker … von der Packung${db.foods.length ? ` · ${db.foods.length} gespeichert` : ""}`)))}${navRow("nav", "foods", esc(T("Foods", "Lebensmittel")), esc(T(`${FOODS.length} foods built in + search Open Food Facts`, `${FOODS.length} Lebensmittel eingebaut + Suche in Open Food Facts`)))}${navRow("nav", "settings", esc(T("Daily goals", "Tagesziele")), g.kcal || g.p ? esc(`${g.kcal ? `${nf0.format(g.kcal)} kcal` : ""}${g.kcal && g.p ? " · " : ""}${g.p ? `${g.p} g ${T("protein", "Eiweiß")}` : ""}`) : esc(T("Not set – in Settings", "Nicht gesetzt – in den Einstellungen")))}</section>
       <p class="hint">${esc(T("Values are typical averages per 100 g. For exact numbers, add the product from its pack or from Open Food Facts under Foods.", "Die Werte sind typische Durchschnittswerte pro 100 g. Für exakte Zahlen das Produkt von der Packung oder aus Open Food Facts unter Lebensmittel anlegen."))}</p>`;
   }
 
@@ -2562,8 +2708,8 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     return `<div class="portion"><span class="main"><span class="label">${esc(T("Portion", "Portion"))}</span><span class="hint">${esc(T("scales all amounts at once", "ändert alle Mengen auf einmal"))}</span></span><span class="pv"><button class="mbtn" data-action="m-fx" data-arg="-1"${i <= 0 ? " disabled" : ""} aria-label="${esc(T("Smaller portion", "Kleinere Portion"))}">−</button><b id="mFx">× ${esc(nf.format(d.fx))}</b><button class="mbtn" data-action="m-fx" data-arg="1"${i >= FX.length - 1 ? " disabled" : ""} aria-label="${esc(T("Bigger portion", "Größere Portion"))}">+</button></span></div>`;
   }
   function mealTotalsHTML() {
-    const t = sumMacros(allItems()), miss = pendParse().filter((x) => !x.food).length;
-    return `<div class="mtotal"><div><span class="label">${esc(T("Total", "Gesamt"))}</span><b>${nf0.format(t.kcal)} <small>kcal</small></b></div>${macroBoxes(t, { p: 0 })}${miss ? `<p class="err" style="margin:0">${esc(T(`${miss} not recognised – not counted`, `${miss} nicht erkannt – nicht mitgezählt`))}</p>` : ""}</div>`;
+    const all = allItems(), t = sumMacros(all), miss = pendParse().filter((x) => !x.food).length, ex = extrasOf(all);
+    return `<div class="mtotal"><div><span class="label">${esc(T("Total", "Gesamt"))}</span><b>${nf0.format(t.kcal)} <small>kcal</small></b></div>${macroBoxes(t, { p: 0 })}${ex.n ? `<p class="hint xline">${esc(extrasLine(ex))} <span>· ${esc(T(`from ${ex.n} of ${all.length} foods with these values`, `aus ${ex.n} von ${all.length} Zutaten mit Angaben`))}</span></p>` : ""}${miss ? `<p class="err" style="margin:0">${esc(T(`${miss} not recognised – not counted`, `${miss} nicht erkannt – nicht mitgezählt`))}</p>` : ""}</div>`;
   }
   const textLabel = () => (mealDraft && mealDraft.items.length ? T("Add more", "Weitere Zutaten") : T("What did you eat?", "Was hast du gegessen?"));
   function refreshMeal() {
@@ -2606,6 +2752,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
         <textarea id="mealText" class="mealtext${d.items.length ? " sm" : ""}" rows="${d.items.length ? 2 : 4}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${esc(d.items.length ? T("e.g. 1 tsp honey, 10 g chia seeds", "z. B. 1 TL Honig, 10 g Chiasamen") : T("80 g oats, 30 g almonds, 150 ml milk, 1 banana\n2 slices of bread, 1 tbsp butter", "80 g Haferflocken, 30 g Mandeln, 150 ml Milch, 1 Banane\n2 Scheiben Brot, 1 EL Butter"))}">${esc(d.text)}</textarea>
         <span class="hint">${esc(T("One per line or separated by commas. Amounts: g, ml, pcs, slices, tbsp, tsp, glass, cup, handful, can, serving, half … – also in German.", "Eins pro Zeile oder mit Komma getrennt. Mengen: g, ml, Stk, Scheiben, EL, TL, Glas, Tasse, Handvoll, Dose, Portion, halbe … – auch auf Englisch."))}</span></div>
       <section class="sec ilist" id="mealList">${mealListHTML()}</section>
+      <button class="linkbtn" data-action="food-new-meal">+ ${esc(T("Add your own food (from the pack)", "Eigenes Lebensmittel anlegen (von der Packung)"))}</button>
       <div id="mealPortion">${portionHTML()}</div>
       <section id="mealTotals">${mealTotalsHTML()}</section>
       ${tpl ? "" : `${nameField}<div class="two"><div class="field"><label class="label" for="mealDate">${esc(T("Date", "Datum"))}</label><input type="date" id="mealDate" value="${esc(d.date)}" max="${todayISO()}"></div><div class="field"><label class="label" for="mealTime">${esc(T("Time", "Uhrzeit"))}</label><input type="time" id="mealTime" value="${esc(d.time)}"></div></div>`}
@@ -2670,8 +2817,10 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     if (pr == null || f == null || c == null || pr + f + c > 101) return null;
     const nm = String((LANG === "de" ? p.product_name_de || p.product_name : p.product_name_en || p.product_name) || p.product_name_de || p.product_name_en || "").replace(/\s+/g, " ").trim();
     if (!nm) return null;
-    const sq = parseFloat(p.serving_quantity);
-    return { code: String(p.code || ""), name: nm, brand: String(p.brands || "").split(",")[0].trim(), qty: String(p.quantity || "").trim(), kcal: kcal != null ? Math.round(kcal) : 0, p: r1(pr), f: r1(f), c: r1(c), pc: sq > 0 && sq < 2000 ? r1(sq) : 0 };
+    const sq = parseFloat(p.serving_quantity), qty = String(p.quantity || "").trim(), pk = /^(\d+(?:[.,]\d+)?)\s*(g|ml)$/i.exec(qty);
+    const opt = (k) => { const v = num(k); return v != null && v <= 100 ? r1(v) : null; };
+    return { code: String(p.code || ""), name: nm, brand: String(p.brands || "").split(",")[0].trim(), qty, kcal: kcal != null ? Math.round(kcal) : 0, p: r1(pr), f: r1(f), c: r1(c), pc: sq > 0 && sq < 2000 ? r1(sq) : 0,
+      pack: pk ? parseFloat(pk[1].replace(",", ".")) : 0, liq: pk ? pk[2].toLowerCase() === "ml" : false, sf: opt("saturated-fat_100g"), su: opt("sugars_100g"), fi: opt("fiber_100g"), sa: opt("salt_100g") };
   }
   async function offSearch(q) {
     const key = fold(q); if (offCache.has(key)) return offCache.get(key);
@@ -2721,10 +2870,13 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   function viewFoods() {
     const q = state.foodQ || "";
     const list = q ? searchFoods(q, 30) : FOODS;
-    const row = (x) => `<button class="row" data-action="food-open" data-arg="${esc(x.id)}">${badge(foodName(x), x.own ? "#FFE83A" : "#7CF2C9")}<span class="main"><span class="t1">${esc(foodName(x))}${x.own ? `<span class="tag">${esc(T("Own", "Eigene"))}</span>` : ""}</span><span class="t2">${nf0.format(x.kcal)} kcal · ${esc(macroLine1(x))} g${x.u.pc ? ` · 1 ${esc(unitTxt("pc", 1))} = ${nf.format(x.u.pc)} g` : x.u.slice ? ` · 1 ${esc(unitTxt("slice", 1))} = ${nf.format(x.u.slice)} g` : ""}</span></span><span class="val"></span><span class="chev" aria-hidden="true">›</span></button>`;
+    const row = (x) => `<button class="row" data-action="food-open" data-arg="${esc(x.id)}">${badge(foodName(x), x.own ? "#FFE83A" : "#7CF2C9")}<span class="main"><span class="t1">${esc(foodName(x))}${x.own ? `<span class="tag">${esc(T("Own", "Eigene"))}</span>` : ""}</span><span class="t2">${x.brand ? `${esc(x.brand)} · ` : ""}${nf0.format(x.kcal)} kcal · ${esc(macroLine1(x))} g${x.u.pc ? ` · 1 ${esc(unitTxt("pc", 1))} = ${nf.format(x.u.pc)} g` : x.u.slice ? ` · 1 ${esc(unitTxt("slice", 1))} = ${nf.format(x.u.slice)} g` : ""}</span></span><span class="val"></span><span class="chev" aria-hidden="true">›</span></button>`;
     let body;
     if (q) body = `<section class="sec">${list.map(row).join("") || `<p class="hint">${esc(T("Nothing found in the app.", "In der App nichts gefunden."))}</p>`}</section><section class="sec offsec" id="foodsOff">${offBlockHTML("foods", q)}</section>`;
-    else body = FOOD_CATS.map(([k, en, de]) => { const xs = list.filter((x) => x.cat === k); return xs.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T(en, de))}</h2><span class="label">${esc(pl(xs.length, "food"))}</span></div>${xs.map(row).join("")}</section>` : ""; }).join("");
+    else body = `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("My foods", "Meine Lebensmittel"))}</h2><span class="label">${esc(pl(db.foods.length, "food"))}</span></div>
+        <button class="addbig sm" data-action="food-new"><span aria-hidden="true">+</span>${esc(T("Add your own food", "Eigenes Lebensmittel anlegen"))}</button>
+        ${list.filter((x) => x.own).map(row).join("") || `<p class="hint" style="padding:8px 0">${esc(T("Your products with the values from the pack – calories, protein, fat, carbs, sugar, fibre, salt. Then just type their name in a meal.", "Deine Produkte mit den Werten von der Packung – Kalorien, Eiweiß, Fett, Kohlenhydrate, Zucker, Ballaststoffe, Salz. Danach in einer Mahlzeit einfach den Namen eintippen."))}</p>`}</section>`
+      + FOOD_CATS.filter(([k]) => k !== "own").map(([k, en, de]) => { const xs = list.filter((x) => x.cat === k); return xs.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T(en, de))}</h2><span class="label">${esc(pl(xs.length, "food"))}</span></div>${xs.map(row).join("")}</section>` : ""; }).join("");
     return `
       ${backBar()}
       <h1 class="vtitle">${esc(T("Foods", "Lebensmittel"))}</h1>
@@ -2733,7 +2885,392 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
       ${body}`;
   }
 
-  const VIEWS = { hub: viewHub, live: viewLive, session: viewSession, history: viewHistory, progress: viewProgress, exercise: viewExercise, workouts: viewWorkouts, tpl: viewTpl, sport: viewSport, settings: viewSettings, exlist: viewExlist, cali: viewCali, food: viewFood, meal: viewMeal, foods: viewFoods, mymeals: viewMyMeals };
+  /* ================= Reports: month, quarter, half-year, year – compared with the period before or the same period last year =================
+     A report "appears" as soon as its period is over (and has entries). The running period can be opened any time ("so far"),
+     then it is compared with the same number of days of the comparison period. */
+  const REP_TYPES = [["m", "Month", "Monat", "Monthly report", "Monatsbericht"], ["q", "Quarter", "Quartal", "Quarterly report", "Quartalsbericht"], ["h", "Half-year", "Halbjahr", "Half-year report", "Halbjahresbericht"], ["y", "Year", "Jahr", "Annual report", "Jahresbericht"]];
+  const REP_N = { m: 1, q: 3, h: 6, y: 12 };
+  function mkPeriod(type, y, m0) {
+    const n = REP_N[type], from = `${y}-${pad(m0 + 1)}-01`, to = addDays(addMonths(from, n), -1), k = m0 / n + 1;
+    const key = type === "m" ? from.slice(0, 7) : type === "q" ? `${y}-Q${k}` : type === "h" ? `${y}-H${k}` : String(y);
+    return { type, y, m0, k, from, to, key, id: `${type}:${key}` };
+  }
+  const periodOf = (type, iso) => { const n = REP_N[type], m = +iso.slice(5, 7) - 1; return mkPeriod(type, +iso.slice(0, 4), Math.floor(m / n) * n); };
+  const periodShift = (p, k) => { const t = p.y * 12 + p.m0 + k * REP_N[p.type]; return mkPeriod(p.type, Math.floor(t / 12), ((t % 12) + 12) % 12); };
+  function periodFromId(id) {
+    const m = /^([mqhy]):(\d{4})(?:-(\d{2})|-Q([1-4])|-H([12]))?$/.exec(id || ""); if (!m) return null;
+    const t = m[1], y = +m[2];
+    if (t === "m" && m[3] && +m[3] >= 1 && +m[3] <= 12) return mkPeriod("m", y, +m[3] - 1);
+    if (t === "q" && m[4]) return mkPeriod("q", y, (+m[4] - 1) * 3);
+    if (t === "h" && m[5]) return mkPeriod("h", y, (+m[5] - 1) * 6);
+    if (t === "y" && !m[3] && !m[4] && !m[5]) return mkPeriod("y", y, 0);
+    return null;
+  }
+  const capF = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const monAb = (iso) => monShort.format(isoDate(iso)).replace(".", "");
+  function periodName(p) {
+    if (p.type === "m") return capF(monthFmt.format(isoDate(p.from)));
+    if (p.type === "q") return `Q${p.k} ${p.y}`;
+    if (p.type === "h") return T(`H${p.k} ${p.y}`, `${p.k}. Halbjahr ${p.y}`);
+    return String(p.y);
+  }
+  const periodShort = (p) => (p.type === "m" ? `${capF(monAb(p.from))} ${p.y}` : p.type === "h" ? T(`H${p.k} ${p.y}`, `${p.k}. Hj. ${p.y}`) : periodName(p));
+  const repRow = (t) => REP_TYPES.find((x) => x[0] === t) || REP_TYPES[0];
+  const repTypeName = (t) => T(repRow(t)[1], repRow(t)[2]);
+  const repKindName = (t) => T(repRow(t)[3], repRow(t)[4]);
+  const isRunning = (p) => p.to >= todayISO() && p.from <= todayISO();
+  const periodEnd = (p) => (isRunning(p) ? todayISO() : p.to);
+  const periodLen = (p) => daysBetween(p.from, p.to) + 1;
+  const minIso = (a, b) => (a < b ? a : b);
+  function cmpName(type, mode) {
+    if (mode === "yoy" && type !== "y") return { m: T("Same month last year", "Vorjahresmonat"), q: T("Same quarter last year", "Vorjahresquartal"), h: T("Same half last year", "Vorjahreshalbjahr") }[type];
+    return { m: T("Previous month", "Vormonat"), q: T("Previous quarter", "Vorquartal"), h: T("Previous half-year", "Vorheriges Halbjahr"), y: T("Previous year", "Vorjahr") }[type];
+  }
+
+  /* ---------- What happened in a date range ---------- */
+  const repMemo = new Map();
+  function repStats(from, to) {
+    const key = `${ver}|${from}|${to}`;
+    if (repMemo.has(key)) return repMemo.get(key);
+    if (repMemo.size > 400) repMemo.clear();
+    const D = derived(), r = {
+      from, to, n: 0, dur: 0, dayN: 0, weekN: 0, sp: {}, grp: {}, vol: 0, sets: 0, reps: 0, hold: 0, prs: [], best: new Map(), lvTop: new Map(), lvUp: [], newEx: [], daily: new Map(),
+      run: { n: 0, km: 0, dur: 0, longest: null, fastest: null }, hyrox: { n: 0, dur: 0, best: null }, fb: { n: 0, games: 0, goals: 0, assists: 0, dur: 0 }, other: { n: 0, dur: 0 }, food: null, has: false
+    };
+    const days = new Set(), weeks = new Set();
+    const day = (d) => { let x = r.daily.get(d); if (!x) { x = { dur: 0, n: 0, vol: 0, km: 0, sets: 0 }; r.daily.set(d, x); } return x; };
+    for (const s of D.asc) {
+      if (s.date < from) continue;
+      if (s.date > to) break;
+      const dur = s.dur || 0, dd = day(s.date);
+      r.n++; r.dur += dur; days.add(s.date); weeks.add(weekStart(s.date)); dd.n++; dd.dur += dur;
+      const sp = r.sp[s.sport] || (r.sp[s.sport] = { n: 0, dur: 0 }); sp.n++; sp.dur += dur;
+      if (isLift(s)) {
+        for (const e of s.ex || []) {
+          const x = exOf(e.id), st = exStats(e, x.kind); if (!st.sets) continue;
+          r.sets += st.sets; dd.sets += st.sets; r.grp[x.group] = (r.grp[x.group] || 0) + st.sets;
+          if (x.kind === "kg") { r.vol += st.vol; dd.vol += st.vol; r.reps += st.total; } else if (x.kind === "bw") r.reps += st.total; else r.hold += st.total;
+          const lv = lvKey(x, e.lv), v = x.kind === "kg" ? st.e1rm : x.kind === "bw" ? st.reps : st.time, k = `${e.id}|${lv == null ? "" : lv}`, b = r.best.get(k);
+          if (v > 0 && (!b || v > b.v)) r.best.set(k, { id: e.id, lv, kind: x.kind, v, date: s.date, sid: s.id });
+          if (lv != null) r.lvTop.set(e.id, Math.max(r.lvTop.has(e.id) ? r.lvTop.get(e.id) : -1, lv));
+        }
+        for (const p of D.prs.get(s.id) || []) r.prs.push({ ...p, date: s.date, sid: s.id });
+      } else if (s.sport === "run") {
+        const R = r.run; R.n++;
+        if (s.dist > 0) { R.km += s.dist; dd.km += s.dist; if (dur) R.dur += dur; if (!R.longest || s.dist > R.longest.dist) R.longest = s; if (s.dist >= 3 && dur && (!R.fastest || dur / s.dist < R.fastest.dur / R.fastest.dist)) R.fastest = s; }
+      } else if (s.sport === "hyrox") { r.hyrox.n++; r.hyrox.dur += dur; if ((s.kind === "Wettkampf" || s.kind === "Simulation") && dur && (!r.hyrox.best || dur < r.hyrox.best.dur)) r.hyrox.best = s; }
+      else if (s.sport === "fb") { const F = r.fb; F.n++; F.dur += dur; if (s.kind === "Spiel") F.games++; F.goals += s.goals || 0; F.assists += s.assists || 0; }
+      else { r.other.n++; r.other.dur += dur; }
+    }
+    r.dayN = days.size; r.weekN = weeks.size;
+    // new calisthenics levels: highest level in the range above the highest level before it
+    for (const [id, top] of r.lvTop) {
+      let before = -1;
+      for (const h of D.byEx.get(id) || []) { if (h.s.date >= from) break; if (h.lv != null && h.lv > before) before = h.lv; }
+      if (before >= 0 && top > before) r.lvUp.push({ id, from: before, to: top });
+    }
+    // exercises done for the very first time
+    const ids = new Set([...r.best.values()].map((b) => b.id));
+    for (const id of ids) { const l = D.byEx.get(id); if (l && l.length && l[0].s.date >= from) r.newEx.push(id); }
+    // nutrition: averages over the days with entries
+    const md = new Map();
+    for (const m of db.meals) {
+      if (m.date < from || m.date > to) continue;
+      const t = sumMacros(m.items), a = md.get(m.date) || { kcal: 0, p: 0, f: 0, c: 0 };
+      a.kcal += t.kcal; a.p += t.p; a.f += t.f; a.c += t.c; md.set(m.date, a);
+    }
+    const fd = md.size, g = db.settings.goals, vals = [...md.values()], avg = (k) => (fd ? vals.reduce((s, x) => s + x[k], 0) / fd : 0);
+    r.food = { days: fd, kcal: avg("kcal"), p: avg("p"), f: avg("f"), c: avg("c"), pGoal: g.p ? vals.filter((x) => x.p >= g.p).length : 0, kGoal: g.kcal ? vals.filter((x) => Math.abs(x.kcal - g.kcal) <= g.kcal * 0.1).length : 0 };
+    r.has = r.n > 0 || fd > 0;
+    repMemo.set(key, r);
+    return r;
+  }
+  function buildReport(p, mode) {
+    const running = isRunning(p), end = periodEnd(p), elapsed = daysBetween(p.from, end);
+    const c = mode === "yoy" && p.type !== "y" ? periodShift(p, -12 / REP_N[p.type]) : periodShift(p, -1);
+    const cEnd = running ? minIso(addDays(c.from, elapsed), c.to) : c.to;
+    return { p, c, mode, running, end, cEnd, cur: repStats(p.from, end), cmp: repStats(c.from, cEnd), cmpFull: repStats(c.from, c.to) };
+  }
+  function firstDataDate() {
+    const D = derived(); let f = D.asc.length ? D.asc[0].date : "";
+    for (const m of db.meals) if (!f || m.date < f) f = m.date;
+    return f;
+  }
+  /* periods newest first, from the running one back to the first entry */
+  function periodList(type) {
+    const first = firstDataDate(); if (!first) return [];
+    const out = []; for (let p = periodOf(type, todayISO()); p.to >= first && out.length < 120; p = periodShift(p, -1)) out.push(p);
+    return out;
+  }
+  /* "new" = the last finished period has entries and wasn't opened yet */
+  const lastDone = (type) => { const p = periodShift(periodOf(type, todayISO()), -1); return repStats(p.from, p.to).has ? p : null; };
+  const newReports = (field) => { const st = db.settings[field] || {}; return REP_TYPES.map(([t]) => lastDone(t)).filter((p) => p && (st[p.type] || "") < p.key); };
+  const isNewRep = (p) => { const st = db.settings.repSeen || {}, l = lastDone(p.type); return !!l && l.id === p.id && (st[p.type] || "") < p.key; };
+  function markRep(field, list) {
+    const st = db.settings[field] = { ...(db.settings[field] || {}) }; let ch = false;
+    for (const p of list) if ((st[p.type] || "") < p.key) { st[p.type] = p.key; ch = true; }
+    if (ch) persist();
+  }
+
+  /* ---------- Small building blocks ---------- */
+  function dlt(cur, prev, opt) {
+    const o = opt || {};
+    if (!(prev > 0)) return cur > 0 ? `<span class="dl new">${esc(T("new", "neu"))}</span>` : `<span class="dl">–</span>`;
+    const d = (cur - prev) / prev;
+    if (Math.abs(d) < 0.005) return `<span class="dl">±0 %</span>`;
+    const cls = o.neutral ? "" : (o.lower ? d < 0 : d > 0) ? "up" : "down";
+    return `<span class="dl ${cls}">${d > 0 ? "▲ +" : "▼ −"}${nf0.format(Math.min(999, Math.abs(d * 100)))} %</span>`;
+  }
+  const repDur = (v) => (v >= 100 * 3600 ? `${nf0.format(v / 3600)} h` : durTxt(v));
+  const onDays = (n) => (LANG === "de" ? `${nf.format(n)} ${n === 1 ? "Tag" : "Tagen"}` : pl(n, "day"));
+  const endDot = (t) => (/[.!?]$/.test(t) ? t : t + ".");
+  const paceOf = (r) => (r.run.km > 0 && r.run.dur > 0 ? r.run.dur / r.run.km : 0);
+  const n0 = (v) => nf0.format(v);
+  const bestFmt = (kind, v) => (kind === "kg" ? kg(Math.round(v * 2) / 2) : kind === "bw" ? pl(v, "rep") : secTxt(v));
+  const bestLab = (kind) => (kind === "kg" ? "e1RM" : kind === "bw" ? T("best set", "bester Satz") : T("longest hold", "längste Haltezeit"));
+  function kpiRows(list, cs) {
+    return list.filter((r) => r[1] > 0 || r[2] > 0).map(([lab, a, b, fmt, opt]) => `<div class="kpirow"><span class="k">${esc(lab)}</span><span class="v"><b>${esc(a > 0 ? fmt(a) : "–")}</b><small>${esc(cs)}: ${esc(b > 0 ? fmt(b) : "–")}</small></span>${dlt(a, b, opt)}</div>`).join("");
+  }
+  /* two bars per row: this period (colour) and the comparison (grey) */
+  function cmpRows(items, fmt, cs) {
+    const max = Math.max(1e-9, ...items.map((x) => Math.max(x.a, x.b)));
+    return items.map((x) => `<div class="cmprow">
+      <div class="cmptop"><span class="cmpname"><i style="background:${x.color}"></i>${esc(x.name)}</span><span class="cmpval"><b>${esc(x.a ? fmt(x.a) : "–")}</b><small>${esc(cs)}: ${esc(x.b ? fmt(x.b) : "–")}</small></span>${dlt(x.a, x.b)}</div>
+      <div class="cmpbars" aria-hidden="true"><span class="cur" style="width:${((x.a / max) * 100).toFixed(1)}%;background:${x.color}"></span><span class="old" style="width:${((x.b / max) * 100).toFixed(1)}%"></span></div>
+    </div>`).join("");
+  }
+
+  /* ---------- Comparison chart: cumulative lines or grouped bars, touch to read ---------- */
+  let cmpCharts = [];
+  function cmpBlock(id, cfg, legend) {
+    cmpCharts.push({ id, cfg });
+    return `<div class="cmpread" id="${id}R" aria-live="polite">${cfg.read(null)}</div><div class="chart cmpchart" id="${id}"></div><div class="legend">${legend}</div>`;
+  }
+  function drawCmp(host, cfg) {
+    if (!host) return;
+    const W = Math.max(260, Math.round(host.clientWidth || 320)), Hh = 200, L = 46, R = 12, Tp = 14, B = 26, pw = W - L - R, ph = Hh - Tp - B;
+    const A = cfg.a, Bv = cfg.b, n = cfg.n, f = (v) => v.toFixed(1);
+    const hi = Math.max(0, ...A, ...Bv);
+    const step = niceStep(hi || cfg.minStep || 1, cfg.minStep || 1, cfg.steps), yMax = Math.max(step, Math.ceil(hi / step - 1e-9) * step);
+    const Y = (v) => Tp + ph - (v / yMax) * ph;
+    let s = "";
+    for (let v = 0, g = 0; v <= yMax + step / 2 && g < 12; v += step, g++) s += `<line class="grid${v === 0 ? " base" : ""}" x1="${L}" x2="${W - R}" y1="${f(Y(v))}" y2="${f(Y(v))}"/><text class="ylab" x="${L - 8}" y="${f(Y(v) + 4)}" text-anchor="end">${esc(cfg.yfmt(v))}</text>`;
+    const gw = pw / n, X = cfg.bars ? (i) => L + gw * (i + 0.5) : (i) => L + (n <= 1 ? 0.5 : i / (n - 1)) * pw;
+    let lastX = -1e9;
+    for (const t of cfg.ticks) { const x = X(t.i); if (x - lastX < 34) continue; lastX = x; const anchor = !cfg.bars && t.i === 0 ? "start" : !cfg.bars && t.i >= n - 1 ? "end" : "middle"; s += `<text class="xlab" x="${f(x)}" y="${Hh - 6}" text-anchor="${anchor}">${esc(t.text)}</text>`; }
+    if (cfg.bars) {
+      const bw = clamp(gw * 0.3, 3, 18), y0 = Y(0);
+      for (let i = 0; i < n; i++) {
+        const cx = X(i), vb = Bv[i] || 0, va = A[i] || 0;
+        if (vb > 0) s += `<rect class="oldbar" x="${f(cx - bw * 1.08)}" y="${f(Y(vb))}" width="${f(bw)}" height="${f(Math.max(2, y0 - Y(vb)))}" rx="2"/>`;
+        if (va > 0) s += `<rect x="${f(cx + bw * 0.08)}" y="${f(Y(va))}" width="${f(bw)}" height="${f(Math.max(2, y0 - Y(va)))}" rx="2" style="fill:${cfg.color};opacity:${cfg.partial === i ? 0.55 : 1}"/>`;
+      }
+    } else {
+      const path = (vals) => vals.map((v, i) => `${i ? "L" : "M"}${f(X(i))},${f(Y(v))}`).join("");
+      if (Bv.length > 1) s += `<path class="line oldline" d="${path(Bv)}"/>`;
+      if (A.length > 1) {
+        const gid = "cgrad" + (++gradCount), d = path(A);
+        s += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${cfg.color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${cfg.color};stop-opacity:0"/></linearGradient></defs>`;
+        s += `<path d="${d}L${f(X(A.length - 1))},${f(Tp + ph)}L${f(X(0))},${f(Tp + ph)}Z" style="fill:url(#${gid})"/><path class="line" d="${d}" style="stroke:${cfg.color}"/>`;
+      }
+      if (A.length) s += `<circle class="ring" cx="${f(X(A.length - 1))}" cy="${f(Y(A[A.length - 1]))}" r="5" style="fill:${cfg.color}"/>`;
+    }
+    s += `<g class="cur" visibility="hidden"><line class="cursor" x1="0" x2="0" y1="${Tp}" y2="${Tp + ph}"/></g>`;
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" style="height:${Hh}px" role="img" aria-label="${esc(cfg.aria || "Chart")}">${s}</svg>`;
+    const svg = host.firstElementChild, cur = svg.querySelector(".cur"), out = $(host.id + "R");
+    const hide = () => { cur.setAttribute("visibility", "hidden"); if (out) out.innerHTML = cfg.read(null); };
+    const at = (ev) => {
+      const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * (W / r.width);
+      const i = clamp(cfg.bars ? Math.floor((x - L) / gw) : Math.round(((x - L) / pw) * (n - 1)), 0, n - 1), cx = f(X(i));
+      cur.firstElementChild.setAttribute("x1", cx); cur.firstElementChild.setAttribute("x2", cx); cur.setAttribute("visibility", "visible");
+      if (out) out.innerHTML = cfg.read(i);
+    };
+    svg.addEventListener("pointerdown", at); svg.addEventListener("pointermove", at);
+    svg.addEventListener("pointerleave", hide); svg.addEventListener("pointercancel", hide);
+    svg.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") hide(); });
+  }
+  const REP_METRICS = {
+    dur: { name: () => T("Time", "Zeit"), fmt: (v) => repDur(v), y: (v) => `${nf0.format(v / 3600)} h`, step: 1800, steps: [1800, 3600, 7200, 3 * 3600, 5 * 3600, 10 * 3600, 20 * 3600, 25 * 3600, 50 * 3600, 100 * 3600] },
+    n: { name: () => T("Sessions", "Einheiten"), fmt: (v) => pl(v, "session"), y: (v) => nf0.format(v), step: 1 },
+    vol: { name: () => T("Volume", "Volumen"), fmt: tons, y: (v) => (v >= 1000 ? `${nf0.format(v / 1000)} t` : nf0.format(v)), step: 500 },
+    sets: { name: () => T("Sets", "Sätze"), fmt: (v) => pl(v, "set"), y: (v) => nf0.format(v), step: 5 },
+    km: { name: () => "km", fmt: (v) => `${nf1.format(v)} km`, y: (v) => nf0.format(v), step: 5 }
+  };
+  const metricVal = (r, k) => (k === "dur" ? r.dur : k === "n" ? r.n : k === "vol" ? r.vol : k === "sets" ? r.sets : r.run.km);
+  /* sub-periods: weeks of the month (1–7, 8–14 …) or months of the quarter / half-year / year */
+  function subBuckets(p) {
+    if (p.type === "m") { const len = periodLen(p), out = []; for (let a = 0; a < len; a += 7) { const b = Math.min(len, a + 7) - 1; out.push({ a, b, text: `${a + 1}.–${b + 1}.`, long: T(`Days ${a + 1}–${b + 1}`, `${a + 1}. bis ${b + 1}.`) }); } return out; }
+    return Array.from({ length: REP_N[p.type] }, (_, i) => { const m = addMonths(p.from, i); return { m: i, text: capF(monAb(m)), long: capF(monthLong.format(isoDate(m))) }; });
+  }
+  function subVals(r, q, bks, k) {
+    return bks.map((bk) => {
+      let from, to;
+      if (bk.m != null) { from = addMonths(q.from, bk.m); to = addDays(addMonths(from, 1), -1); } else { from = addDays(q.from, bk.a); to = addDays(q.from, bk.b); }
+      let v = 0; for (const [d, x] of r.daily) if (d >= from && d <= to) v += x[k];
+      return v;
+    });
+  }
+  function cumVals(r, from, len, k, upto) {
+    const out = []; let acc = 0;
+    for (let i = 0; i < len; i++) { const d = addDays(from, i); if (upto && d > upto) break; const x = r.daily.get(d); if (x) acc += x[k]; out.push(acc); }
+    return out;
+  }
+
+  /* ---------- Highlights in plain words ---------- */
+  function repHighlights(R) {
+    const a = R.cur, b = R.cmp, cs = periodShort(R.c), out = [], unit = repTypeName(R.p.type);
+    if (a.n) {
+      if (b.dur > 0) {
+        const d = a.dur - b.dur, pc = nf0.format(Math.abs((d / b.dur) * 100));
+        out.push(Math.abs(d) < 60 ? T(`As much training as in ${cs}: <b>${repDur(a.dur)}</b>.`, `Genauso viel trainiert wie ${cs}: <b>${repDur(a.dur)}</b>.`)
+          : d > 0 ? T(`<b>${repDur(d)} more training</b> than in ${cs} (+${pc} %) – ${pl(a.n, "session")} on ${pl(a.dayN, "day")}.`, `<b>${repDur(d)} mehr Training</b> als ${cs} (+${pc} %) – ${pl(a.n, "session")} an ${onDays(a.dayN)}.`)
+            : T(`${repDur(-d)} less training than in ${cs} (−${pc} %) – ${pl(a.n, "session")} on ${pl(a.dayN, "day")}.`, `${repDur(-d)} weniger Training als ${cs} (−${pc} %) – ${pl(a.n, "session")} an ${onDays(a.dayN)}.`));
+      } else out.push(T(`<b>${pl(a.n, "session")}</b> with ${repDur(a.dur)} of training on ${pl(a.dayN, "day")}.`, `<b>${pl(a.n, "session")}</b> mit ${repDur(a.dur)} Training an ${onDays(a.dayN)}.`));
+      if (!R.running) {
+        let earlier = 0, beat = null;
+        for (let q = periodShift(R.p, -1), k = 0; k < 120; q = periodShift(q, -1), k++) {
+          if (q.to < firstDataDate()) break;
+          const rq = repStats(q.from, q.to); if (!rq.n) continue;
+          earlier++; if (rq.dur > a.dur) { beat = q; break; }
+        }
+        const unitL = LANG === "de" ? { m: "Monat", q: "Quartal", h: "Halbjahr", y: "Jahr" }[R.p.type] : unit.toLowerCase();
+        const adj = LANG === "de" ? (R.p.type === "m" || R.p.type === "y" ? "aktivster" : "aktivstes") : "most active";
+        if (!beat && earlier >= 2) out.push(T(`Your <b>${adj} ${unitL} so far</b>.`, `Dein <b>${adj} ${unitL}</b> bisher.`));
+        else if (beat && daysBetween(beat.to, R.p.from) > 60 * REP_N[R.p.type]) out.push(T(`Most active ${unitL} since <b>${periodName(beat)}</b>.`, `${capF(adj)} ${unitL} seit <b>${periodName(beat)}</b>.`));
+      }
+      if (a.prs.length) {
+        const byGain = (l) => l.slice().sort((x, y) => (y.value / y.prev) - (x.value / x.prev))[0];
+        const top = byGain(a.prs.filter((q) => q.type === "e1rm")) || byGain(a.prs), x = exOf(top.ex), m = METRIC[top.type];
+        const what = `${esc(exName(x))}${top.type === "e1rm" ? " e1RM" : top.type === "time" ? "" : ` (${esc(metricLabel(top.type, top.kind))})`} +${esc(m.fmt(top.value - top.prev))}`;
+        out.push(endDot(T(`<b>${pl(a.prs.length, "record")}</b> – biggest jump: ${what}`, `<b>${pl(a.prs.length, "record")}</b> – größter Sprung: ${what}`)));
+      }
+      if (a.lvUp.length) { const u = a.lvUp[0], x = exOf(u.id); out.push(T(`New level: <b>${esc(exName(x))} – ${esc(lvName(x, u.to))}</b>${a.lvUp.length > 1 ? ` and ${a.lvUp.length - 1} more` : ""}.`, `Neue Stufe: <b>${esc(exName(x))} – ${esc(lvName(x, u.to))}</b>${a.lvUp.length > 1 ? ` und ${a.lvUp.length - 1} weitere` : ""}.`)); }
+      if (a.run.km) {
+        const pa = paceOf(a), pb = paceOf(b), dp = pb && pa ? Math.round(pb - pa) : 0;
+        out.push(T(`<b>${nf1.format(a.run.km)} km</b> run${dp > 2 ? ` – average pace ${dp} s/km faster` : dp < -2 ? ` – average pace ${-dp} s/km slower` : ""}.`, `<b>${nf1.format(a.run.km)} km</b> gelaufen${dp > 2 ? ` – Ø Pace ${dp} s/km schneller` : dp < -2 ? ` – Ø Pace ${-dp} s/km langsamer` : ""}.`));
+      }
+      if (a.fb.goals || a.fb.assists) out.push(T(`Football: ${pl(a.fb.goals, "goal")}, ${pl(a.fb.assists, "assist")}.`, `Fußball: ${pl(a.fb.goals, "goal")}, ${pl(a.fb.assists, "assist")}.`));
+      if (a.newEx.length) out.push(T(`New: ${esc(a.newEx.slice(0, 3).map((id) => exName(exOf(id))).join(", "))}${a.newEx.length > 3 ? ` +${a.newEx.length - 3}` : ""}.`, `Neu dabei: ${esc(a.newEx.slice(0, 3).map((id) => exName(exOf(id))).join(", "))}${a.newEx.length > 3 ? ` +${a.newEx.length - 3}` : ""}.`));
+      const wk = Math.floor(daysBetween(weekStart(R.p.from), weekStart(R.end)) / 7) + 1;
+      if (wk >= 3) out.push(T(`Trained in <b>${a.weekN} of ${wk} weeks</b>.`, `In <b>${a.weekN} von ${wk} Wochen</b> trainiert.`));
+    } else if (a.has) out.push(T("No training logged in this period.", "In diesem Zeitraum kein Training eingetragen."));
+    if (a.food.days) {
+      const g = db.settings.goals;
+      out.push(T(`Nutrition logged on ${pl(a.food.days, "day")} – Ø ${n0(a.food.kcal)} kcal and ${n0(a.food.p)} g protein${g.p ? `, protein goal on ${a.food.pGoal} days` : ""}.`, `Ernährung an ${onDays(a.food.days)} erfasst – Ø ${n0(a.food.kcal)} kcal und ${n0(a.food.p)} g Eiweiß${g.p ? `, Eiweißziel an ${a.food.pGoal} Tagen` : ""}.`));
+    }
+    return out;
+  }
+
+  /* ---------- Reports list ---------- */
+  function viewReports() {
+    const type = state.repType, list = periodList(type);
+    const pills2 = pills("rep-type", type, REP_TYPES.map(([k]) => [k, repTypeName(k)]), T("Period", "Zeitraum"));
+    const head = `${backBar()}<h1 class="vtitle">${esc(T("Reports", "Berichte"))}</h1><p class="meta">${esc(T("Created automatically when a month, quarter, half-year or year is over – what you did, in which sports and muscle groups, and how much you improved. Compared with the period before or the same period last year.", "Werden automatisch erstellt, sobald ein Monat, Quartal, Halbjahr oder Jahr vorbei ist – was du geleistet hast, in welchen Sportarten und Muskelgruppen und wie stark du dich gesteigert hast. Im Vergleich zum Vorzeitraum oder zum Vorjahr."))}</p>${pills2}`;
+    if (!list.length) return `${head}${emptyBox(T("No reports yet", "Noch keine Berichte"), esc(T("As soon as you log workouts, runs or meals, your first report builds up here.", "Sobald du Trainings, Läufe oder Mahlzeiten einträgst, entsteht hier dein erster Bericht.")))}`;
+    // chart: training time per period, oldest → newest
+    const ch = list.slice(0, 12).reverse(), vals = ch.map((p) => repStats(p.from, periodEnd(p)).dur);
+    const chart = chartBlock("chRep", {
+      bars: true, points: vals.map((v) => ({ value: v / 3600 })), ticks: ch.map((p, i) => ({ i, text: type === "m" ? capF(monAb(p.from)) : type === "y" ? String(p.y) : type === "q" ? `Q${p.k}${p.k === 1 ? ` ’${String(p.y).slice(2)}` : ""}` : `${p.k === 1 ? "H1" : "H2"} ’${String(p.y).slice(2)}` })),
+      color: "var(--accent)", partialLast: isRunning(ch[ch.length - 1]), minStep: 1, yfmt: (v) => `${nf0.format(v)} h`, aria: T("Training time per period", "Trainingszeit pro Zeitraum")
+    }, {
+      label: `${T("Training time", "Trainingszeit")} · ${periodName(ch[ch.length - 1])}`, base: { v: repDur(vals[vals.length - 1]), sub: esc(isRunning(ch[ch.length - 1]) ? T("so far – tap the bars", "bisher – Balken antippen") : T("tap the bars", "Balken antippen")) },
+      at: (i) => ({ v: repDur(vals[i]), sub: esc(periodName(ch[i])) + (isRunning(ch[i]) ? ` · ${esc(T("in progress", "läuft noch"))}` : "") })
+    }, `<span><i style="border-color:var(--accent);border-top-width:6px"></i>${esc(T("Training time", "Trainingszeit"))} ${esc(T("per", "pro"))} ${esc(repTypeName(type))}</span>`);
+    const rows = list.map((p) => {
+      const run = isRunning(p), r = repStats(p.from, periodEnd(p));
+      if (!r.has && !run) return "";
+      const pr = periodShift(p, -1), rp = repStats(pr.from, run ? minIso(addDays(pr.from, daysBetween(p.from, todayISO())), pr.to) : pr.to);
+      const sub = r.n ? `${pl(r.n, "session")} · ${repDur(r.dur)}${r.prs.length ? ` · ${pl(r.prs.length, "record")}` : ""}${r.run.km ? ` · ${nf1.format(r.run.km)} km` : ""}` : r.food.days ? T(`Nutrition only · ${pl(r.food.days, "day")}`, `Nur Ernährung · ${pl(r.food.days, "day")}`) : T("Nothing logged yet", "Noch nichts eingetragen");
+      const tag = run ? `<span class="tag">${esc(T("so far", "läuft"))}</span>` : isNewRep(p) ? `<span class="tag attn">${esc(T("New", "Neu"))}</span>` : "";
+      return `<button class="row nobadge" data-action="rep-open" data-arg="${esc(p.id)}"><span class="main"><span class="t1">${esc(periodName(p))}${tag}</span><span class="t2">${esc(sub)}</span></span><span class="val">${r.n || rp.n ? dlt(r.dur, rp.dur) : ""}<small>${esc(T("time", "Zeit"))}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+    }).join("");
+    return `${head}${chart}<section class="sec"><div class="sechead"><h2 class="sectitle">${esc({ m: T("All months", "Alle Monate"), q: T("All quarters", "Alle Quartale"), h: T("All half-years", "Alle Halbjahre"), y: T("All years", "Alle Jahre") }[type])}</h2><span class="label">${esc(T("vs. period before", "vs. Vorzeitraum"))}</span></div>${rows}</section>
+      <p class="hint">${esc(T("Reports always show your current data – if you edit an old workout, its report updates too.", "Berichte zeigen immer deine aktuellen Daten – änderst du ein altes Training, passt sich auch der Bericht an."))}</p>`;
+  }
+
+  /* ---------- One report ---------- */
+  function viewReport(v) {
+    const p = periodFromId(v.p);
+    if (!p) return `${backBar()}${emptyBox(T("Not found", "Nicht gefunden"), "")}`;
+    const mode = p.type === "y" ? "prev" : state.repCmp, R = buildReport(p, mode), a = R.cur, b = R.cmp, cs = periodShort(R.c);
+    const next = periodShift(p, 1), canNext = next.from <= todayISO(), prev = periodShift(p, -1), canPrev = prev.to >= (firstDataDate() || p.from);
+    const nav = `<div class="daynav repnav"><button class="mbtn" data-action="rep-step" data-arg="-1"${canPrev ? "" : " disabled"} aria-label="${esc(T("Earlier", "Früher"))}">‹</button><b>${esc(repKindName(p.type))}</b><button class="mbtn" data-action="rep-step" data-arg="1"${canNext ? "" : " disabled"} aria-label="${esc(T("Later", "Später"))}">›</button></div>`;
+    const head = `${backBar()}${nav}<h1 class="vtitle">${esc(periodName(p))}</h1><p class="meta">${esc(`${dayMonth.format(isoDate(p.from))} – ${dateFmt.format(isoDate(p.to))}`)}${R.running ? ` · <b class="pos">${esc(T(`so far, as of today`, `läuft noch – Stand heute`))}</b>` : ""}</p>`;
+    const cmpPills = p.type === "y" ? "" : pills("rep-cmp", mode, [["prev", cmpName(p.type, "prev")], ["yoy", cmpName(p.type, "yoy")]], T("Compare with", "Vergleichen mit"));
+    if (!a.has) return `${head}${cmpPills}${emptyBox(T("Nothing logged in this period", "In diesem Zeitraum nichts eingetragen"), esc(T("Workouts, runs and meals from this period show up here.", "Trainings, Läufe und Mahlzeiten aus diesem Zeitraum erscheinen hier.")))}`;
+    const runNote = R.running ? `<p class="hint">${esc(T(`Compared with ${periodName(R.c)} up to the same day (${dayMonth.format(isoDate(R.cEnd))}).`, `Verglichen mit ${periodName(R.c)} bis zum gleichen Tag (${dayMonth.format(isoDate(R.cEnd))}).`))}</p>` : "";
+    const hero = `<section class="hero"><span class="label">${esc(T("Training time", "Trainingszeit"))} · ${esc(T("vs.", "vs."))} ${esc(periodName(R.c))}</span><div class="heroval">${heroHTML(repDur(a.dur))}</div><div class="herosub">${dlt(a.dur, b.dur)} <span>${esc(cs)}: ${esc(b.dur ? repDur(b.dur) : "–")} · ${esc(pl(a.n, "session"))}</span></div></section>`;
+    const hl = repHighlights(R);
+    const hlCard = hl.length ? `<section class="card hlcard"><span class="label">${esc(T("What you achieved", "Das hast du geleistet"))}</span><ul class="hl">${hl.map((x) => `<li>${x}</li>`).join("")}</ul></section>` : "";
+    const lift = a.sets || b.sets, hasRun = a.run.n || b.run.n;
+    const kpis = kpiRows([
+      [T("Sessions", "Einheiten"), a.n, b.n, n0], [T("Training time", "Trainingszeit"), a.dur, b.dur, repDur], [T("Active days", "Aktive Tage"), a.dayN, b.dayN, n0], [T("Records", "Rekorde"), a.prs.length, b.prs.length, n0],
+      [T("Gym volume", "Gym-Volumen"), a.vol, b.vol, tons], [T("Hard sets", "Harte Sätze"), a.sets, b.sets, n0], [T("Reps", "Wiederholungen"), a.reps, b.reps, n0], [T("Hold time", "Haltezeit"), a.hold, b.hold, secTxt],
+      [T("Runs", "Läufe"), a.run.n, b.run.n, n0], [T("Running distance", "Laufdistanz"), a.run.km, b.run.km, (x) => `${nf1.format(x)} km`], [T("Avg. pace", "Ø Pace"), paceOf(a), paceOf(b), paceTxt, { lower: true }],
+      ["Hyrox", a.hyrox.n, b.hyrox.n, (x) => pl(x, "session")], [T("Football", "Fußball"), a.fb.n, b.fb.n, (x) => pl(x, "session")], [T("Goals + assists", "Tore + Vorlagen"), a.fb.goals + a.fb.assists, b.fb.goals + b.fb.assists, n0],
+      [sportName("other"), a.other.n, b.other.n, (x) => pl(x, "session")]
+    ], cs);
+    // charts
+    const ms = Object.keys(REP_METRICS).filter((k) => metricVal(a, k) > 0 || metricVal(R.cmpFull, k) > 0);
+    const mk = ms.includes(state.repMetric) ? state.repMetric : ms[0] || "dur", M = REP_METRICS[mk], len = Math.max(periodLen(p), periodLen(R.c));
+    const cA = cumVals(a, p.from, periodLen(p), mk, R.end), cB = cumVals(R.cmpFull, R.c.from, periodLen(R.c), mk);
+    const ticksL = p.type === "m" ? [0, 7, 14, 21, 28].filter((i) => i < len).map((i) => ({ i, text: `${i + 1}.` })) : Array.from({ length: REP_N[p.type] }, (_, i) => ({ i: daysBetween(p.from, addMonths(p.from, i)), text: capF(monAb(addMonths(p.from, i))) }));
+    const curName = periodShort(p);
+    const lineChart = ms.length ? cmpBlock("rcLine", {
+      a: cA, b: cB, n: len, ticks: ticksL, color: "var(--accent)", yfmt: M.y, minStep: M.step, steps: M.steps, aria: T("Cumulative comparison", "Kumulierter Vergleich"),
+      read: (i) => i == null ? `<b>${esc(curName)}: ${esc(M.fmt(cA[cA.length - 1] || 0))}</b><span>${esc(periodShort(R.c))}: ${esc(M.fmt(R.running ? cB[Math.min(cB.length - 1, cA.length - 1)] || 0 : cB[cB.length - 1] || 0))}${R.running ? ` ${esc(T("by the same day", "bis zum gleichen Tag"))}` : ""}</span>`
+        : `<b>${esc(T("By", "Bis"))} ${esc(dayMonth.format(isoDate(addDays(p.from, i))))}: ${esc(i < cA.length ? M.fmt(cA[i]) : "–")}</b><span>${esc(periodShort(R.c))}: ${esc(i < cB.length ? M.fmt(cB[i]) : "–")}</span>`
+    }, `<span><i style="border-color:var(--accent)"></i>${esc(curName)}</span><span><i class="dash" style="border-color:var(--faint)"></i>${esc(periodShort(R.c))}</span>`) : "";
+    const bks = subBuckets(p), sA = subVals(a, p, bks, mk), sB = subVals(R.cmpFull, R.c, bks, mk);
+    const partial = R.running ? (p.type === "m" ? Math.floor(daysBetween(p.from, R.end) / 7) : +R.end.slice(5, 7) - 1 - p.m0) : -1;
+    const barChart = ms.length ? cmpBlock("rcBars", {
+      bars: true, a: sA, b: sB, n: bks.length, partial, ticks: bks.map((x, i) => ({ i, text: x.text })), color: "var(--accent)", yfmt: M.y, minStep: M.step, steps: M.steps, aria: T("Per sub-period", "Pro Abschnitt"),
+      read: (i) => i == null ? `<b>${esc(p.type === "m" ? T("Per week of the month", "Pro Monatswoche") : T("Per month", "Pro Monat"))}</b><span>${esc(T("tap a bar", "Balken antippen"))}</span>` : `<b>${esc(bks[i].long)}: ${esc(M.fmt(sA[i]))}</b><span>${esc(periodShort(R.c))}: ${esc(M.fmt(sB[i]))}</span>`
+    }, `<span><i style="border-color:var(--accent);border-top-width:6px"></i>${esc(curName)}</span><span><i style="border-color:var(--faint);border-top-width:6px"></i>${esc(periodShort(R.c))}</span>`) : "";
+    const chartSec = ms.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("In comparison", "Im Vergleich"))}</h2><span class="label">${esc(T("cumulative", "kumuliert"))}</span></div>${ms.length > 1 ? pills("rep-metric", mk, ms.map((k) => [k, REP_METRICS[k].name()]), T("Metric", "Kennzahl")) : ""}${lineChart}<div style="height:18px"></div>${barChart}</section>` : "";
+    // categories
+    const sports = Object.keys(SPORTS).map((k) => ({ name: sportName(k), color: SPORTS[k].color, a: (a.sp[k] || {}).dur || 0, b: (b.sp[k] || {}).dur || 0 })).filter((x) => x.a || x.b).sort((x, y) => y.a - x.a || y.b - x.b);
+    const groups = GROUPS.map((g) => ({ name: groupName(g), color: GROUP_COLORS[g], a: a.grp[g] || 0, b: b.grp[g] || 0 })).filter((x) => x.a || x.b).sort((x, y) => y.a - x.a || y.b - x.b);
+    const sportSec = sports.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Sports", "Sportarten"))}</h2><span class="label">${esc(T("Training time", "Trainingszeit"))}</span></div>${cmpRows(sports, repDur, cs)}</section>` : "";
+    const groupSec = groups.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Muscle groups", "Muskelgruppen"))}</h2><span class="label">${esc(T("Hard sets", "Harte Sätze"))}</span></div>${cmpRows(groups, n0, cs)}</section>` : "";
+    // improvements per exercise (same level for skills)
+    const all = [];
+    for (const [k, cb] of a.best) { const pb = b.best.get(k); if (pb && pb.v > 0) all.push({ ...cb, pv: pb.v, d: cb.v - pb.v, pct: (cb.v - pb.v) / pb.v }); }
+    all.sort((x, y) => y.pct - x.pct);
+    const upRow = (u) => { const x = exOf(u.id), pos = u.d > 1e-9, eq = Math.abs(u.d) <= 1e-9; return `<button class="row" data-action="ex" data-arg="${esc(u.id)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}${u.lv != null && hasLv(x) ? ` <span class="tag">${esc(lvName(x, u.lv))}</span>` : ""}</span><span class="t2">${esc(bestFmt(u.kind, u.pv))} → ${esc(bestFmt(u.kind, u.v))} · ${esc(bestLab(u.kind))}</span></span><span class="val"><span class="${eq ? "" : pos ? "pos" : "neg"}">${eq ? "±0" : `${pos ? "+" : "−"}${esc(bestFmt(u.kind, Math.abs(u.d)).replace(/ (Wdh\.|reps?)$/, ""))}`}</span><small>${eq ? "" : `${pos ? "+" : "−"}${nf0.format(Math.abs(u.pct * 100))} %`}</small></span><span class="chev" aria-hidden="true">›</span></button>`; };
+    const ups = all.filter((u) => u.d > 1e-9), rest = all.filter((u) => !(u.d > 1e-9));
+    const lvRows = a.lvUp.map((u) => { const x = exOf(u.id); return `<button class="row" data-action="ex" data-arg="${esc(u.id)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${esc(lvName(x, u.from))} → ${esc(lvName(x, u.to))}</span></span><span class="val"><span class="pos">${esc(T("Level", "Stufe"))} ${u.to + 1}</span><small>${ladder(x, u.to)}</small></span><span class="chev" aria-hidden="true">›</span></button>`; }).join("");
+    const upSec = ups.length || lvRows || rest.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Improvements", "Steigerungen"))}</h2><span class="label">${esc(T("best value vs.", "Bestwert vs."))} ${esc(cs)}</span></div>
+      ${lvRows}${ups.slice(0, 8).map(upRow).join("") || (lvRows ? "" : `<p class="hint" style="padding:6px 0">${esc(T("No exercise beat its best value from the comparison period this time.", "Diesmal hat keine Übung ihren Bestwert aus dem Vergleichszeitraum übertroffen."))}</p>`)}
+      ${all.length > Math.min(8, ups.length) ? `<details class="more allex"><summary>${esc(T(`All exercises in comparison (${all.length})`, `Alle Übungen im Vergleich (${all.length})`))}</summary>${ups.slice(8).concat(rest).map(upRow).join("")}</details>` : ""}</section>` : "";
+    const prs = a.prs.slice().sort((x, y) => y.date.localeCompare(x.date));
+    const prSec = prs.length ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("New records", "Neue Rekorde"))}</h2><span class="label">${esc(pl(prs.length, "record"))}</span></div>${prs.slice(0, 6).map((q) => { const x = exOf(q.ex), m = METRIC[q.type]; return `<button class="row" data-action="session" data-arg="${esc(q.sid)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}${hasLv(x) && q.lv != null ? ` <span class="tag">${esc(lvName(x, q.lv))}</span>` : ""}</span><span class="t2">${esc(metricLabel(q.type, q.kind))} · ${esc(dayTxt(q.date))}</span></span><span class="val">${esc(m.fmt(q.value))}<small class="pos">+${esc(m.fmt(q.value - q.prev))}</small></span><span class="chev" aria-hidden="true">›</span></button>`; }).join("")}
+      ${prs.length > 6 ? `<details class="more allex"><summary>${esc(T(`Show all ${prs.length}`, `Alle ${prs.length} anzeigen`))}</summary>${prs.slice(6).map((q) => { const x = exOf(q.ex), m = METRIC[q.type]; return `<div class="kpirow"><span class="k">${esc(exName(x))} · ${esc(metricLabel(q.type, q.kind))}</span><span class="v"><b>${esc(m.fmt(q.value))}</b><small>${esc(dayTxt(q.date))}</small></span><span class="dl up">+${esc(m.fmt(q.value - q.prev))}</span></div>`; }).join("")}</details>` : ""}</section>` : "";
+    const runBest = hasRun && (a.run.longest || a.run.fastest || a.hyrox.best) ? `<section class="card"><span class="label">${esc(T("Best in this period", "Bestwerte im Zeitraum"))}</span><div class="prlist">${a.run.longest ? recLine(T("Longest run", "Längster Lauf"), `${nf.format(a.run.longest.dist)} km`, a.run.longest.date) : ""}${a.run.fastest ? recLine(T("Fastest pace (3 km+)", "Schnellste Pace (ab 3 km)"), paceTxt(a.run.fastest.dur / a.run.fastest.dist), a.run.fastest.date) : ""}${a.hyrox.best ? recLine(`Hyrox (${typeName(a.hyrox.best.kind)})`, clock(a.hyrox.best.dur), a.hyrox.best.date) : ""}</div></section>` : "";
+    const fA = a.food, fB = b.food;
+    const foodSec = fA.days || fB.days ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Nutrition", "Ernährung"))}</h2><span class="label">${esc(T("per logged day", "pro erfasstem Tag"))}</span></div>${kpiRows([
+      [T("Days logged", "Erfasste Tage"), fA.days, fB.days, n0], [T("Ø calories", "Ø Kalorien"), fA.kcal, fB.kcal, (x) => `${n0(x)} kcal`, { neutral: true }], [T("Ø protein", "Ø Eiweiß"), fA.p, fB.p, (x) => `${n0(x)} g`],
+      [T("Ø fat", "Ø Fett"), fA.f, fB.f, (x) => `${n0(x)} g`, { neutral: true }], [T("Ø carbs", "Ø Kohlenhydrate"), fA.c, fB.c, (x) => `${n0(x)} g`, { neutral: true }],
+      [T("Protein goal reached", "Eiweißziel erreicht"), fA.pGoal, fB.pGoal, (x) => pl(x, "day")], [T("Calorie goal ±10 %", "Kalorienziel ±10 %"), fA.kGoal, fB.kGoal, (x) => pl(x, "day")]
+    ], cs)}</section>` : "";
+    return `
+      ${head}
+      ${cmpPills}
+      ${hero}
+      ${runNote}
+      ${hlCard}
+      ${a.n || b.n ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Overview", "Überblick"))}</h2><span class="label">${esc(T("vs.", "vs."))} ${esc(cs)}</span></div>${kpis}</section>` : ""}
+      ${chartSec}
+      ${sportSec}
+      ${groupSec}
+      ${upSec}
+      ${prSec}
+      ${runBest}
+      ${foodSec}
+      <p class="hint">${esc(T("Records count new all-time bests. Improvements compare each exercise's best value (e1RM, best set or longest hold – same level for skills) with the comparison period.", "Rekorde zählen neue Bestwerte aller Zeiten. Steigerungen vergleichen den Bestwert jeder Übung (e1RM, bester Satz oder längste Haltezeit – bei Skills auf derselben Stufe) mit dem Vergleichszeitraum."))}</p>`;
+  }
+
+  const VIEWS = { hub: viewHub, live: viewLive, session: viewSession, history: viewHistory, progress: viewProgress, exercise: viewExercise, workouts: viewWorkouts, tpl: viewTpl, sport: viewSport, settings: viewSettings, exlist: viewExlist, cali: viewCali, food: viewFood, meal: viewMeal, foods: viewFoods, mymeals: viewMyMeals, reports: viewReports, report: viewReport };
   const FAB = {
     history: [() => T("Workout", "Training"), () => openStart()], progress: [() => T("Workout", "Training"), () => openStart()], workouts: [() => "Workout", () => newTemplate()],
     exlist: [() => T("Exercise", "Übung"), () => openEx(null)], sport: [() => T("Log", "Eintragen"), () => openAct(null, state.stack[state.stack.length - 1].p)],
@@ -2744,7 +3281,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     const focusId = document.activeElement && document.activeElement.id;
     const caret = focusId && document.activeElement.selectionStart != null ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
     const chipRow = root.querySelector(".chiprow"), keepScroll = chipRow ? chipRow.scrollLeft : 0;
-    charts = [];
+    charts = []; cmpCharts = [];
     root.innerHTML = (VIEWS[top.v] || viewHub)(top);
     root.classList.toggle("hub", top.v === "hub");
     document.body.classList.toggle("hubmode", top.v === "hub");
@@ -2753,6 +3290,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     const newRow = root.querySelector(".chiprow"); if (newRow) newRow.scrollLeft = keepScroll;
     if (focusId && root.contains($(focusId))) { const el = $(focusId); el.focus({ preventScroll: true }); if (caret && el.setSelectionRange) try { el.setSelectionRange(caret[0], caret[1]); } catch { /* not a text field */ } }
     charts.forEach((c) => drawChart($(c.id), { ...c.cfg, onScrub: (i) => scrubTo(c, i, $(c.id + "Val"), $(c.id + "Sub")) }));
+    cmpCharts.forEach((c) => drawCmp($(c.id), c.cfg));
     if (state.full) renderFull();
     const fab = FAB[top.v];
     $("fab").hidden = !fab || !!rest;
@@ -2760,7 +3298,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     if (top.v === "hub" && pendingStart) { pendingStart = false; openStart(); }
   }
   let resizeTimer;
-  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { charts.forEach((c) => drawChart($(c.id), { ...c.cfg, onScrub: (i) => scrubTo(c, i, $(c.id + "Val"), $(c.id + "Sub")) })); if (state.full) drawFull(); }, 120); });
+  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { charts.forEach((c) => drawChart($(c.id), { ...c.cfg, onScrub: (i) => scrubTo(c, i, $(c.id + "Val"), $(c.id + "Sub")) })); cmpCharts.forEach((c) => drawCmp($(c.id), c.cfg)); if (state.full) drawFull(); }, 120); });
   function setLang(l) {
     LANG = l; try { localStorage.setItem(LANG_KEY, l); } catch { /* ignore */ }
     setLocale(); applyStatic(); buildEx(); buildFoodIndex(); ver++; render(); placeSplash(true);
@@ -2903,6 +3441,14 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
         draft.ex.splice(i, 1); state.armed = null; saveDraft(); render(); break;
       }
       case "pick-open": openPick(arg); break;
+      case "pick-swap": { const P = state.pick; if (!P || !P.swap) break; const tg = P.target; closeSheetsAnimated(); applySwap(tg, arg); break; }
+      /* exercise menu (in a workout or a template) */
+      case "xm": openXm(arg); break;
+      case "xm-swap": { const c = state.xm; if (!c) break; closeSheets(); openPick(c.w === "d" ? `swap:d:${c.i}` : `swap:t:${c.t}:${c.i}`); break; }
+      case "xm-edit": { const c = state.xm, id = c && xmId(c); if (!id) break; closeSheets(); openEx(id); break; }
+      case "xm-hist": { const c = state.xm, id = c && xmId(c); if (!id) break; closeSheets(); go("exercise", id); break; }
+      case "xm-move": xmMove(+arg); break;
+      case "xm-del": xmDel(a); break;
       case "pick-toggle": { const P = state.pick; if (!P) break; const k = P.sel.indexOf(arg); if (k >= 0) P.sel.splice(k, 1); else P.sel.push(arg); renderPick(); break; }
       case "pick-group": if (state.pick) { state.pick.group = arg; renderPick(true); } break;
       case "ex-new-from-pick": { const P = state.pick; closeSheets(); openEx(null, P); break; }
@@ -2956,10 +3502,28 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
         db.meals.push(c); persist(); render(); toast(T(`Added · ${nf0.format(sumMacros(c.items).kcal)} kcal`, `Hinzugefügt · ${nf0.format(sumMacros(c.items).kcal)} kcal`), { label: T("Undo", "Rückgängig"), fn: () => { db.meals = db.meals.filter((x) => x.id !== c.id); persist(); render(); } });
         break;
       }
+      case "food-new": openFood(null); break;
+      case "food-new-meal": if (mealDraft) openFood(null, { ret: { add: true } }); break;
       case "food-open": { const f = FOOD_BY.get(arg); if (f && f.own) openFood(arg); else if (f) openFood(null, { base: f }); break; }
       case "f-metric": state.fMetric = arg; render(); break;
       case "f-range": state.fRange = arg; render(); break;
       case "fpick-choose": chooseFood(arg); break;
+      /* reports */
+      case "rep-list": markRep("repNoted", newReports("repNoted")); if (arg) state.repType = arg; go("reports"); break;
+      case "rep-new": {
+        const nr = newReports("repNoted"); markRep("repNoted", nr);
+        if (nr.length === 1) { markRep("repSeen", nr); go("report", nr[0].id); } else { state.repType = nr.length ? nr[nr.length - 1].type : state.repType; go("reports"); }
+        break;
+      }
+      case "rep-type": state.repType = arg; render(); break;
+      case "rep-cmp": state.repCmp = arg; render(); break;
+      case "rep-metric": state.repMetric = arg; render(); break;
+      case "rep-open": { const p = periodFromId(arg); if (!p) break; markRep("repSeen", [p]); markRep("repNoted", [p]); go("report", p.id); break; }
+      case "rep-step": {
+        const top = state.stack[state.stack.length - 1], p = periodFromId(top.p); if (!p) break;
+        const q = periodShift(p, +arg); if (q.from > todayISO()) break;
+        markRep("repSeen", [q]); top.p = q.id; render(); window.scrollTo(0, 0); break;
+      }
       /* data */
       case "export-json": exportJson(); break;
       case "export-csv": exportCsv(); break;
@@ -3026,6 +3590,8 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     }
     if (t.id === "fpickQ") { renderFoodPick(); return; }
     if (t.closest && t.closest("#actForm")) updateActPreview();
+    if (t.id === "foodKj") { const kj = parseNum(t.value), kc = $("foodKcal"); if (kc.value === "" || kcalAuto) { kc.value = kj > 0 ? fmtIn(Math.round(kj / 4.184)) : ""; kcalAuto = kj > 0; } }
+    if (t.id === "foodKcal") kcalAuto = false;
     if (t.closest && t.closest("#foodForm")) updateFoodPreview();
   });
   document.addEventListener("change", (ev) => {
@@ -3054,7 +3620,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   document.addEventListener("toggle", (ev) => { if (ev.target.id === "liveMore" && draft) { draft.moreOpen = ev.target.open; } }, true);
 
   /* ================= Sheets ================= */
-  const SHEETS = ["startSheet", "pickSheet", "exSheet", "actSheet", "foodSheet", "fpickSheet"];
+  const SHEETS = ["startSheet", "pickSheet", "exSheet", "xmSheet", "actSheet", "foodSheet", "fpickSheet"];
   let sheetTok = 0;
   function showSheet(id) { sheetTok++; $("backdrop").hidden = false; $(id).hidden = false; $(id).scrollTop = 0; }
   function sheetOpen() { return SHEETS.map((id) => $(id)).find((el) => el && !el.hidden) || null; }
@@ -3072,7 +3638,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   function closeSheets() {
     SHEETS.forEach((id) => { const el = $(id); el.style.transform = ""; el.style.transition = ""; el.style.animation = ""; el.classList.remove("dragging"); el.hidden = true; });
     $("backdrop").style.opacity = ""; $("backdrop").style.transition = ""; $("backdrop").hidden = true;
-    state.pick = null; actEditing = null; exEditing = null; foodEditing = null; foodOff = null; fpick = null;
+    state.pick = null; state.xm = null; actEditing = null; exEditing = null; foodEditing = null; foodOff = null; fpick = null;
   }
 
   /* ---------- Start chooser ---------- */
@@ -3093,9 +3659,12 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
 
   /* ---------- Exercise picker ---------- */
   function openPick(target) {
-    const has = derived().byEx.size > 0, cali = target === "draft" && draft && draft.sport === "cali";
-    state.pick = { target, sel: [], group: cali ? "Cali" : has ? "Recent" : "All", q: "" };
+    const has = derived().byEx.size > 0, swap = String(target).startsWith("swap:"), cur = swap ? xmId(xmCtx(target)) : null;
+    const cali = (target === "draft" || swap) && draft && draft.sport === "cali";
+    state.pick = { target, sel: [], group: cur ? (exOf(cur).cali && exOf(cur).cali !== "basic" ? "Cali" : exOf(cur).group) : cali ? "Cali" : has ? "Recent" : "All", q: "", swap, cur };
     $("pickQ").value = "";
+    $("pickTitle").textContent = swap ? T("Swap exercise", "Übung tauschen") : T("Add exercises", "Übungen hinzufügen");
+    $("pickGo").hidden = swap;
     renderPick(true);
     showSheet("pickSheet");
   }
@@ -3116,6 +3685,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     if (q || P.group === "All" || GROUPS.includes(P.group)) xs.sort((a, b) => (GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group)) || exName(a).localeCompare(exName(b), LANG));
     $("pickList").innerHTML = xs.map((x) => {
       const k = P.sel.indexOf(x.id), lu = lastOf(x.id);
+      if (P.swap) return `<button type="button" class="pickrow${x.id === P.cur ? " cur" : ""}" data-action="pick-swap" data-arg="${esc(x.id)}"${x.id === P.cur ? " disabled" : ""}><span class="checkc${x.id === P.cur ? " on" : ""}" aria-hidden="true">${x.id === P.cur ? "✓" : "⇄"}</span><span class="main"><span class="t1">${esc(exName(x))}${x.id === P.cur ? ` <span class="tag">${esc(T("current", "aktuell"))}</span>` : ""}</span><span class="t2">${esc(groupName(x.group))} · ${esc(kindText(x.kind))}${lu ? ` · ${esc(T("last", "zuletzt"))} ${esc(rel(lu))}` : ""}</span></span>${badgeEx(x)}</button>`;
       return `<button type="button" class="pickrow" data-action="pick-toggle" data-arg="${esc(x.id)}" aria-pressed="${k >= 0}"><span class="checkc${k >= 0 ? " on" : ""}" aria-hidden="true">${k >= 0 ? k + 1 : ""}</span><span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${esc(groupName(x.group))} · ${esc(kindText(x.kind))}${hasLv(x) ? ` · ${pl(x.lv.length, "level")}` : ""}${lu ? ` · ${esc(T("last", "zuletzt"))} ${esc(rel(lu))}` : ""}</span></span>${badgeEx(x)}</button>`;
     }).join("") || `<p class="hint" style="padding:14px 0">${esc(T("Nothing found. Add it with “New exercise”.", "Nichts gefunden. Leg sie mit „Neue Übung\" an."))}</p>`;
     $("pickGo").disabled = !P.sel.length;
@@ -3141,6 +3711,62 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     toast(T(`${pl(n, "exercise")} added`, `${pl(n, "exercise")} hinzugefügt`));
   });
 
+  /* ---------- Exercise menu: swap, edit, history, move, remove – right from the workout ---------- */
+  const xmCtx = (arg) => { const p = String(arg).replace(/^swap:/, "").split(":"); return p[0] === "d" ? { w: "d", i: +p[1] } : { w: "t", t: p[1], i: +p[2] }; };
+  function xmList(c) { if (c.w === "d") return draft ? draft.ex : null; const t = tplById(c.t); return t ? t.items : null; }
+  function xmId(c) { const L = c && xmList(c), it = L && L[c.i]; return it ? (c.w === "d" ? it.id : it.ex) : null; }
+  function openXm(arg) {
+    const top = state.stack[state.stack.length - 1], c = String(arg).startsWith("d:") ? xmCtx(arg) : { w: "t", t: top.p, i: +String(arg).split(":")[1] };
+    const L = xmList(c), id = xmId(c); if (!id) return;
+    state.xm = c;
+    const x = exOf(id), e = L[c.i], has = c.w === "d" && e.sets.some((s) => s.done || s.w !== "" || s.r !== "" || s.t !== "");
+    const used = (derived().byEx.get(id) || []).length;
+    $("xmHead").innerHTML = `${badgeEx(x)}<div class="xmt"><b id="xmTitle">${esc(exName(x))}</b><span class="exmeta"><i style="background:${GROUP_COLORS[x.group] || "#D4D4D8"}"></i>${esc(groupName(x.group))} · ${esc(kindText(x.kind))}${used ? ` · ${esc(pl(used, "workout"))}` : ""}</span></div>`;
+    const item = (act, icon, t1, t2, extra, arg) => `<button type="button" class="menuitem${extra || ""}" data-action="${act}"${arg != null ? ` data-arg="${arg}"` : ""}${extra && extra.includes("disabled") ? " disabled" : ""}><span class="mi" aria-hidden="true">${icon}</span><span class="main"><span class="t1">${esc(t1)}</span>${t2 ? `<span class="t2">${esc(t2)}</span>` : ""}</span></button>`;
+    $("xmList").innerHTML =
+      item("xm-swap", "⇄", T("Swap exercise", "Übung tauschen"), has ? T("Picked the wrong one? Choose another – your entered sets stay.", "Falsche erwischt? Andere wählen – deine eingetragenen Sätze bleiben.") : T("Picked the wrong one? Choose another.", "Falsche erwischt? Einfach eine andere wählen."))
+      + item("xm-edit", "✎", T("Edit exercise", "Übung bearbeiten"), x.base || used ? T("Name and muscle group", "Name und Muskelgruppe") : T("Name, muscle group and how it's measured", "Name, Muskelgruppe und Messart"))
+      + item("xm-hist", "↗", T("History & records", "Verlauf & Rekorde"), used ? T("Chart of all your workouts", "Grafik über alle Trainings") : T("No data yet", "Noch keine Daten"))
+      + `<div class="two">${item("xm-move", "↑", T("Move up", "Nach oben"), "", c.i === 0 ? " half disabled" : " half", -1)}${item("xm-move", "↓", T("Move down", "Nach unten"), "", c.i === L.length - 1 ? " half disabled" : " half", 1)}</div>`
+      + `<button type="button" class="menuitem danger" data-action="xm-del" data-has="${has ? 1 : 0}"><span class="mi" aria-hidden="true">✕</span><span class="main"><span class="t1">${esc(c.w === "d" ? T("Remove from workout", "Aus dem Training entfernen") : T("Remove from plan", "Aus dem Workout entfernen"))}</span>${has ? `<span class="t2">${esc(T("Entered sets are lost", "Eingetragene Sätze gehen verloren"))}</span>` : ""}</span></button>`;
+    showSheet("xmSheet");
+  }
+  function xmMove(dir) {
+    const c = state.xm, L = c && xmList(c); if (!L) return;
+    const k = c.i + dir; if (k < 0 || k >= L.length) return;
+    [L[c.i], L[k]] = [L[k], L[c.i]];
+    if (c.w === "d") saveDraft(); else persist();
+    closeSheetsAnimated(); render();
+    setTimeout(() => { const el = c.w === "d" ? document.querySelector(`.excard[data-ex="${k}"]`) : document.querySelectorAll(".tplrow")[k]; if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 60);
+  }
+  function xmDel(btn) {
+    const c = state.xm, L = c && xmList(c); if (!L || !L[c.i]) return;
+    if (btn.dataset.has === "1" && !btn.classList.contains("armed")) { btn.classList.add("armed"); btn.querySelector(".t1").textContent = T("Really remove?", "Wirklich entfernen?"); return; }
+    const [it] = L.splice(c.i, 1), x = exOf(c.w === "d" ? it.id : it.ex);
+    if (c.w === "d") saveDraft(); else persist();
+    closeSheetsAnimated(); render();
+    toast(T(`${exName(x)} removed`, `${exName(x)} entfernt`), { label: T("Undo", "Rückgängig"), fn: () => { const L2 = xmList(c); if (!L2) return; L2.splice(Math.min(c.i, L2.length), 0, it); if (c.w === "d") saveDraft(); else persist(); render(); } });
+  }
+  function applySwap(target, id) {
+    const c = xmCtx(target), L = xmList(c); if (!L || !L[c.i]) return;
+    const x = exOf(id), it = L[c.i], old = exOf(c.w === "d" ? it.id : it.ex);
+    if (old.id === id) return;
+    const fits = (old.kind === "time") === (x.kind === "time");
+    if (c.w === "d") {
+      it.id = id; delete it.prBest;
+      if (!fits) it.sets = it.sets.map((q) => blankSet(q.wu));
+      if (hasLv(x)) it.lv = Math.max(0, topLevel(id)); else delete it.lv;
+      saveDraft();
+    } else {
+      it.ex = id;
+      if (!fits) it.reps = x.kind === "kg" ? "8–12" : "";
+      if (hasLv(x)) it.lv = Math.max(0, topLevel(id)); else delete it.lv;
+      persist();
+    }
+    render();
+    toast(T(`Swapped: ${exName(old)} → ${exName(x)}`, `Getauscht: ${exName(old)} → ${exName(x)}`));
+  }
+
   /* ---------- Custom exercise ---------- */
   let exEditing = null, exKind = "kg", exReturn = null;
   function setExKind(k) { exKind = k; document.querySelectorAll("#exForm [data-kind]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === k))); $("exKindHint").textContent = kindHint(k); }
@@ -3155,6 +3781,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     document.querySelectorAll("#exForm [data-kind]").forEach((b) => { b.disabled = locked; });
     $("exCali").checked = x ? !!x.cali : !!(returnPick && returnPick.group === "Cali");
     $("exCaliWrap").hidden = !!(x && x.base);
+    $("exAllHint").hidden = !x;
     $("exErr").textContent = "";
     const del = $("exDelete"); del.hidden = !x || x.base; del.classList.remove("armed"); del.textContent = T("Delete", "Löschen");
     showSheet("exSheet");
@@ -3172,8 +3799,13 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
     else if (exEditing) { const c = db.exercises.find((e) => e.id === exEditing.id); if (c) { c.name = name; c.group = group; c.kind = exKind; c.cali = cali ? (exKind === "time" ? "static" : "basic") : null; } id = exEditing.id; }
     else { id = "c" + newId(); db.exercises.push({ id, name, group, kind: exKind, cali: cali ? (exKind === "time" ? "static" : "basic") : null }); }
     persist();
-    const ret = exReturn, wasEdit = !!exEditing; closeSheets(); render();
-    if (ret) { openPick(ret.target); state.pick.sel = ret.sel.concat(id); state.pick.group = "All"; renderPick(true); }
+    const ret = exReturn, wasEdit = !!exEditing;
+    // a custom exercise switched between hold time and reps: entered values in the running workout no longer fit
+    if (draft && exEditing && (exEditing.kind === "time") !== (exKind === "time") && !exEditing.base) for (const e of draft.ex) if (e.id === id) e.sets = e.sets.map((q) => blankSet(q.wu));
+    if (draft) saveDraft();
+    closeSheets(); render();
+    if (ret && ret.swap) { applySwap(ret.target, id); }
+    else if (ret) { openPick(ret.target); state.pick.sel = ret.sel.concat(id); state.pick.group = "All"; renderPick(true); }
     toast(wasEdit ? T("Exercise saved", "Übung gespeichert") : T("Exercise added", "Übung angelegt"));
   });
   $("exDelete").addEventListener("click", () => {
@@ -3263,46 +3895,81 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   });
 
   /* ---------- Own food (also from the pack or from Open Food Facts) ---------- */
-  let foodEditing = null, foodReturn = null, foodOff = null;
+  let foodEditing = null, foodReturn = null, foodOff = null, foodPer = "g", kcalAuto = false;
+  const FOOD_NUM = ["Kcal", "F", "Sf", "C", "Su", "Fi", "P", "Sa"], FKEY = { Kcal: "kcal", F: "f", Sf: "sf", C: "c", Su: "su", Fi: "fi", P: "p", Sa: "sa" };
+  /* values per 100 g, per 100 ml or per serving – switching converts what's already typed in */
+  function setFoodPer(per, convert) {
+    const old = foodPer, por = parseNum($("foodPor").value);
+    if (convert && por > 0 && old !== per && (old === "por" || per === "por")) {
+      const k = per === "por" ? por / 100 : 100 / por;
+      for (const id of FOOD_NUM.map((x) => "food" + x).concat("foodKj")) { const el = $(id), v = parseNum(el.value); if (v != null) el.value = fmtIn(id === "foodKcal" || id === "foodKj" ? Math.round(v * k) : Math.round(v * k * 10) / 10); }
+    }
+    foodPer = per;
+    document.querySelectorAll("#foodPerSeg [data-per]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.per === per)));
+    const f = $("foodPorField"), dest = per === "por" ? $("foodPorTop") : $("foodPorLow");
+    if (f.parentElement !== dest) dest.appendChild(f);
+    $("foodPerHint").textContent = per === "por" ? T("Enter the serving size and the values per serving – PFT converts them to 100 g.", "Portionsgröße und die Werte pro Portion eintragen – PFT rechnet auf 100 g um.")
+      : per === "ml" ? T("For drinks: values per 100 ml from the label.", "Für Getränke: Werte pro 100 ml von der Nährwerttabelle.") : T("Copy the values from the nutrition label on the pack.", "Übertrage die Werte von der Nährwerttabelle auf der Packung.");
+    updateFoodPreview();
+  }
+  document.querySelectorAll("#foodPerSeg [data-per]").forEach((b) => b.addEventListener("click", () => { setFoodPer(b.dataset.per, true); if (b.dataset.per === "por" && !parseNum($("foodPor").value)) $("foodPor").focus(); }));
   function openFood(id, opts) {
     const x = id ? db.foods.find((f) => f.id === id) : null, base = opts && opts.base, off = opts && opts.off;
-    foodEditing = x; foodReturn = (opts && opts.ret) || null; foodOff = off || null;
+    foodEditing = x; foodReturn = (opts && opts.ret) || null; foodOff = off || null; kcalAuto = false;
     $("foodTitle").textContent = x ? T("Edit food", "Lebensmittel bearbeiten") : T("New food", "Neues Lebensmittel");
-    const offName = off ? (off.brand && !fold(off.name).includes(fold(off.brand)) ? `${off.brand} ${off.name}` : off.name).slice(0, 50) : "";
-    const v = x || (off ? { name: offName, kcal: off.kcal, p: off.p, f: off.f, c: off.c, pc: off.pc || "" }
-      : base ? { name: foodName(base), kcal: base.kcal, p: base.p, f: base.f, c: base.c, pc: base.u.pc || base.u.slice || "" } : { name: (opts && opts.name) || "", kcal: "", p: "", f: "", c: "", pc: "" });
-    $("foodName").value = v.name || ""; $("foodKcal").value = v.kcal !== "" && v.kcal != null ? fmtIn(v.kcal) : "";
-    $("foodP").value = v.p !== "" && v.p != null ? fmtIn(v.p) : ""; $("foodF").value = v.f !== "" && v.f != null ? fmtIn(v.f) : ""; $("foodC").value = v.c !== "" && v.c != null ? fmtIn(v.c) : "";
-    $("foodPc").value = v.pc ? fmtIn(v.pc) : ""; $("foodAlias").value = x ? x.alias || "" : "";
+    const v = x ? { ...x } : off ? { name: off.name.slice(0, 50), brand: off.brand.slice(0, 40), kcal: off.kcal, p: off.p, f: off.f, c: off.c, sf: off.sf, su: off.su, fi: off.fi, sa: off.sa, por: off.pc, pack: off.pack, liq: off.liq }
+      : base ? { name: foodName(base), kcal: base.kcal, p: base.p, f: base.f, c: base.c, pc: base.u.pc || base.u.slice || 0, por: base.u.portion || base.u.pot || 0, pack: base.u.pack || 0, liq: isLiq(base) } : { name: (opts && opts.name) || "" };
+    const put = (el, val) => { $(el).value = val != null && val !== "" && !(typeof val === "number" && !Number.isFinite(val)) ? fmtIn(val) : ""; };
+    $("foodName").value = v.name || ""; $("foodBrand").value = v.brand || "";
+    for (const k of FOOD_NUM) put("food" + k, v[FKEY[k]]);
+    if (!(+v.kcal > 0)) $("foodKcal").value = "";
+    $("foodKj").value = ""; put("foodPc", v.pc || ""); put("foodPor", v.por || ""); put("foodPack", v.pack || "");
+    $("foodAlias").value = x ? x.alias || "" : "";
     $("foodErr").textContent = "";
     const del = $("foodDelete"); del.hidden = !x; del.classList.remove("armed"); del.textContent = T("Delete", "Löschen");
     $("foodBaseHint").hidden = !base;
     $("foodOffHint").hidden = !off;
     if (off) $("foodOffHint").textContent = T(`From Open Food Facts${off.qty ? ` (${off.qty})` : ""} – check the values against your pack, then save.`, `Aus Open Food Facts${off.qty ? ` (${off.qty})` : ""} – Werte mit der Packung vergleichen, dann speichern.`);
-    updateFoodPreview();
+    foodPer = "g"; setFoodPer(v.liq ? "ml" : "g", false);
     showSheet("foodSheet");
     if (!x && !base && !off) setTimeout(() => $("foodName").focus(), 60);
   }
   function updateFoodPreview() {
-    const p = parseNum($("foodP").value) || 0, f = parseNum($("foodF").value) || 0, c = parseNum($("foodC").value) || 0, k = parseNum($("foodKcal").value);
-    const calc = Math.round(4 * p + 4 * c + 9 * f);
-    $("foodPreview").innerHTML = `${esc(T("Calculated from macros", "Aus Makros berechnet"))}: <b>${nf0.format(calc)} kcal</b>${k ? ` · ${esc(T("entered", "eingetragen"))}: <b>${nf0.format(k)} kcal</b>` : ""}`;
+    const g = (k) => parseNum($("food" + k).value), p = g("P") || 0, f = g("F") || 0, c = g("C") || 0, k = g("Kcal"), calc = Math.round(4 * p + 4 * c + 9 * f);
+    const por = parseNum($("foodPor").value), m = foodPer === "por" ? (por > 0 ? 100 / por : null) : 1, unit = foodPer === "ml" ? "ml" : "g";
+    let h = `${esc(T("Calculated from protein, fat and carbs", "Aus Eiweiß, Fett und KH berechnet"))}: <b>${nf0.format(calc)} kcal</b>${k ? ` · ${esc(T("entered", "eingetragen"))}: <b>${nf0.format(k)} kcal</b>` : ""}`;
+    if (k && calc > 20 && Math.abs(k - calc) / k > 0.25) h += `<br><span class="neg">${esc(T("Quite different – please check the values.", "Weicht stark ab – bitte die Werte prüfen."))}</span>`;
+    if (foodPer === "por") h += m ? `<br>${esc(T("Per 100 g", "Pro 100 g"))}: <b>${nf0.format((k || calc) * m)} kcal</b> · ${esc(macroLine1({ p: p * m, f: f * m, c: c * m }))} g` : `<br>${esc(T("Enter the serving size first.", "Zuerst die Portionsgröße eintragen."))}`;
+    else if (por > 0 || parseNum($("foodPc").value) > 0) { const w = por > 0 ? por : parseNum($("foodPc").value); h += `<br>${esc(por > 0 ? T("1 serving", "1 Portion") : T("1 piece", "1 Stück"))} (${nf.format(w)} ${unit}): <b>${nf0.format(((k || calc) * w) / 100)} kcal</b> · ${esc(macroLine1({ p: (p * w) / 100, f: (f * w) / 100, c: (c * w) / 100 }))} g`; }
+    $("foodPreview").innerHTML = h;
   }
   $("foodForm").addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const name = $("foodName").value.trim().replace(/\s+/g, " ");
-    const p = parseNum($("foodP").value), f = parseNum($("foodF").value), c = parseNum($("foodC").value), k = parseNum($("foodKcal").value), pc = parseNum($("foodPc").value);
-    if (!name) { $("foodErr").textContent = T("Give it a name.", "Gib einen Namen ein."); return; }
-    if (p == null || f == null || c == null) { $("foodErr").textContent = T("Enter protein, fat and carbs per 100 g (0 is fine).", "Eiweiß, Fett und Kohlenhydrate pro 100 g eintragen (0 ist ok)."); return; }
-    if ([p, f, c].some((v) => v < 0 || v > 100) || p + f + c > 101) { $("foodErr").textContent = T("Per 100 g the values can't add up to more than 100 g.", "Pro 100 g können die Werte zusammen nicht mehr als 100 g sein."); return; }
-    const off = foodOff;
-    const rec = { id: foodEditing ? foodEditing.id : "f" + newId(), name, p, f, c, kcal: k > 0 ? k : 0, pc: pc > 0 ? pc : 0, alias: $("foodAlias").value.trim(), ...(off && off.code ? { off: off.code } : foodEditing && foodEditing.off ? { off: foodEditing.off } : {}) };
+    const err = (t) => { $("foodErr").textContent = t; };
+    const name = $("foodName").value.trim().replace(/\s+/g, " "), brand = $("foodBrand").value.trim().replace(/\s+/g, " ");
+    const num = (id) => parseNum($(id).value), por = num("foodPor"), pc = num("foodPc"), pack = num("foodPack");
+    if (!name) { err(T("Give it a name.", "Gib einen Namen ein.")); return; }
+    if (foodPer === "por" && !(por > 0)) { err(T("Enter how many grams one serving has – or switch to 100 g.", "Trag ein, wie viel Gramm eine Portion hat – oder stell auf 100 g um.")); $("foodPor").focus(); return; }
+    const m = foodPer === "por" ? 100 / por : 1, v = {};
+    for (const k of FOOD_NUM) { const x = num("food" + k); v[FKEY[k]] = x == null ? null : x * m; }
+    const kj = num("foodKj"); if (!(v.kcal > 0) && kj > 0) v.kcal = (kj / 4.184) * m;
+    if (v.p == null || v.f == null || v.c == null) { err(T("Enter at least protein, fat and carbs (0 is fine).", "Mindestens Eiweiß, Fett und Kohlenhydrate eintragen (0 ist ok).")); return; }
+    if ([v.p, v.f, v.c, v.sf, v.su, v.fi, v.sa].some((x) => x != null && x < 0) || v.p + v.f + v.c > 101) { err(foodPer === "por" ? T("Per 100 g that would be more than 100 g – check the serving size.", "Auf 100 g wären das mehr als 100 g – bitte die Portionsgröße prüfen.") : T("Per 100 g the values can't add up to more than 100 g.", "Pro 100 g können die Werte zusammen nicht mehr als 100 g sein.")); return; }
+    if (v.sf != null && v.sf > v.f + 0.05) { err(T("Saturates can't be more than fat.", "Gesättigte Fettsäuren können nicht mehr als Fett sein.")); return; }
+    if (v.su != null && v.su > v.c + 0.05) { err(T("Sugars can't be more than carbs.", "Zucker kann nicht mehr als Kohlenhydrate sein.")); return; }
+    const off = foodOff, liq = foodPer === "ml" || (foodPer === "por" && !!(foodEditing ? foodEditing.liq : off && off.liq));
+    const rec = {
+      id: foodEditing ? foodEditing.id : "f" + newId(), name, ...(brand ? { brand } : {}), p: r1(v.p), f: r1(v.f), c: r1(v.c), kcal: v.kcal > 0 ? Math.round(v.kcal) : 0,
+      ...Object.fromEntries(["sf", "su", "fi", "sa"].filter((k) => v[k] != null).map((k) => [k, Math.round(v[k] * 100) / 100])),
+      pc: pc > 0 ? pc : 0, ...(por > 0 ? { por } : {}), ...(pack > 0 ? { pack } : {}), ...(liq ? { liq: true } : {}), alias: $("foodAlias").value.trim(),
+      ...(off && off.code ? { off: off.code } : foodEditing && foodEditing.off ? { off: foodEditing.off } : {})
+    };
     db.foods = db.foods.filter((x) => x.id !== rec.id).concat(rec);
     persist();
     const ret = foodReturn, wasEdit = !!foodEditing; closeSheets();
-    if (ret && mealDraft) applyPickedFood(ret, rec.id);
-    render();
-    toast(wasEdit ? T("Food saved", "Lebensmittel gespeichert") : ret && mealDraft ? T(`${name} added to the meal`, `${name} in die Mahlzeit übernommen`) : T("Food added", "Lebensmittel angelegt"));
+    if (ret && mealDraft) { applyPickedFood(ret, rec.id); if (state.stack[state.stack.length - 1].v === "meal") { render(); refreshMeal(); } else render(); }
+    else render();
+    toast(wasEdit ? T("Food saved", "Lebensmittel gespeichert") : ret && mealDraft ? T(`${name} added to the meal`, `${name} in die Mahlzeit übernommen`) : T(`${name} saved – type its name in any meal`, `${name} gespeichert – in jeder Mahlzeit einfach den Namen eintippen`));
   });
   $("foodDelete").addEventListener("click", () => {
     const x = foodEditing, b = $("foodDelete"); if (!x) return;
@@ -3337,6 +4004,7 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   }
   function applyPickedFood(ctx, id) {
     const d = mealDraft, food = FOOD_BY.get(id); if (!d || !food) return;
+    if (ctx.add) { commitPending(); const u = food.def, g = u === "g" ? 100 : food.u[u] || 100, it = mkItem(food, u === "g" ? 100 : 1, u, g); it.q0 = it.qty / d.fx; d.items.push(it); return; }
     if (ctx.pend) { d.ov[ctx.pend] = id; return; }
     const old = d.items[ctx.idx]; if (!old) return;
     const it = swapItemFood(old, food); it.q0 = it.qty / d.fx; d.items[ctx.idx] = it;
@@ -3706,14 +4374,15 @@ button.main.linkish { border: 0; background: none; padding: 0; text-align: left;
   load();
   applyStatic();
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch { /* not supported */ }
-  /* Deep links (Home Screen shortcuts): #start, #live, #progress, #cali, #food, #meal, #mymeals, #history, #workouts, #run, #hyrox, #fb */
+  /* Deep links (Home Screen shortcuts): #start, #live, #progress, #cali, #food, #meal, #mymeals, #reports, #history, #workouts, #run, #hyrox, #fb */
   let deep = ""; try { deep = (location.hash || "").replace(/^#/, "").toLowerCase(); } catch { deep = ""; }
-  const DEEP = ["start", "live", "progress", "cali", "food", "meal", "mymeals", "history", "workouts", "run", "hyrox", "fb"];
+  const DEEP = ["start", "live", "progress", "cali", "food", "meal", "mymeals", "reports", "history", "workouts", "run", "hyrox", "fb"];
   if (deep === "start" || (!deep && openMode() === "start")) { if (draft) state.stack.push({ v: "live" }); else pendingStart = true; }
   else if (deep === "live" && draft) state.stack.push({ v: "live" });
   else if (["progress", "cali", "food", "history", "workouts"].includes(deep)) state.stack.push({ v: deep });
   else if (["run", "hyrox", "fb"].includes(deep)) state.stack.push({ v: "sport", p: deep });
   else if (deep === "mymeals") state.stack.push({ v: "food" }, { v: "mymeals" });
+  else if (deep === "reports") state.stack.push({ v: "reports" });
   if (DEEP.includes(deep) || openMode() !== "splash") { $("splash").hidden = true; splashDone = true; }
   try { if (deep) history.replaceState(null, "", location.pathname + location.search); } catch { /* ignore */ }
   placeSplash();

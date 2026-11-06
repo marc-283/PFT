@@ -1,6 +1,19 @@
-# PFT – Personal Fitness Tracker · v1.2.0
+# PFT – Personal Fitness Tracker · v1.3.0
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
+
+## Neu in 1.3.0
+
+- **Berichte:** eigenes Menü (Kachel „Berichte“ im Hauptmenü) mit Monats-, Quartals-, Halbjahres- und Jahresberichten. Ein Bericht erscheint automatisch, sobald der Zeitraum vorbei ist – im Menü steht dann „Neuer Bericht“. Der laufende Zeitraum lässt sich jederzeit ansehen („läuft noch – Stand heute“, verglichen bis zum gleichen Tag).
+  - **Das hast du geleistet:** Zusammenfassung in Sätzen (mehr/weniger Training, aktivster Monat seit …, Rekorde, neue Skill-Stufen, Laufkilometer, Ernährung).
+  - **Überblick als Liste:** Einheiten, Trainingszeit, aktive Tage, Rekorde, Gym-Volumen, Sätze, Wiederholungen, Haltezeit, Läufe, km, Ø Pace, Hyrox, Fußball – jeweils mit Vergleichswert und ▲/▼ in Prozent.
+  - **Vergleich wählbar:** Vormonat/-quartal/-halbjahr oder derselbe Zeitraum im Vorjahr; mit ‹ › durch die Zeiträume blättern.
+  - **Grafisch:** kumulierte Linie (dieser vs. Vergleichszeitraum) und Balken pro Woche bzw. Monat – für Zeit, Einheiten, Volumen, Sätze oder km, antippen zum Ablesen.
+  - **Kategorien:** Sportarten (Trainingszeit) und Muskelgruppen (harte Sätze) mit Vergleichsbalken.
+  - **Steigerungen:** Bestwert je Übung (e1RM, bester Satz, längste Haltezeit) gegenüber dem Vergleichszeitraum, neue Stufen, neue Rekorde, Bestwerte beim Laufen, Ernährung im Schnitt.
+- **Eigene Lebensmittel wie auf der Packung:** Energie (kcal oder kJ), Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Ballaststoffe, Eiweiß, Salz – wahlweise pro 100 g, pro 100 ml oder pro Portion (wird automatisch auf 100 g umgerechnet). Dazu Marke und Mengen (1 Stück, 1 Portion, 1 Packung = … g). Anlegen über Ernährung → „Eigenes Lebensmittel anlegen“, Lebensmittel → „Meine Lebensmittel“ oder direkt im Mahlzeit-Editor. Danach in jeder Mahlzeit einfach den Namen (oder Marke + Name) eintippen; Zucker, Ballaststoffe, Salz usw. werden angezeigt, wo sie bekannt sind.
+- **Übungen direkt im Training ändern:** Übungsnamen oder ⋯ antippen → Übung tauschen (eingetragene Sätze bleiben), bearbeiten (Name, Muskelgruppe), Verlauf ansehen, verschieben oder entfernen (mit Rückgängig). Gleiches im Workout-Editor.
+- Bessere Erkennung zusammengesetzter Wörter beim Eintippen, z. B. „erdnuss butter“, „protein riegel“, „vollkorn toast“.
 
 ## Neu in 1.2.0
 
@@ -39,4 +52,4 @@ Link in **Safari** öffnen → **Teilen → Zum Home-Bildschirm**. Die Home-Bild
 
 ## Kurzbefehle
 
-`#start` (Training) · `#meal` (Mahlzeit eintragen) · `#mymeals` · `#food` · `#cali` · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb` · `#live`
+`#start` (Training) · `#meal` (Mahlzeit eintragen) · `#mymeals` · `#reports` (Berichte) · `#food` · `#cali` · `#progress` · `#history` · `#workouts` · `#run` · `#hyrox` · `#fb` · `#live`
