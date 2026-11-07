@@ -1,4 +1,4 @@
-/* PFT 1.4.0 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
+/* PFT 1.4.1 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
 "use strict";
   const VERSION = window.PFT_VERSION || "1.2.0";
 

@@ -1,6 +1,12 @@
-# PFT – Personal Fitness Tracker · v1.4.0
+# PFT – Personal Fitness Tracker · v1.4.1
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
+
+## Neu in 1.4.1
+
+- **Barcode-Scanner auf dem iPhone repariert:** Der Barcode-Leser liegt jetzt als `zxing.min.js` direkt neben `index.html` (kein Unterordner mehr – der Ordner `vendor` aus 1.4.0 war beim Hochladen nicht mit auf GitHub gelandet, deshalb blieb die Kamera nach dem Erlauben aus). Er wird ein paar Sekunden nach dem Start im Hintergrund geladen, damit der erste Scan schnell ist und danach auch offline klappt.
+- Kamera-Start robuster: höhere Auflösung für schärfere Codes, kein Hängenbleiben beim Videostart, „Kamerabild bleibt schwarz? Einmal antippen“, Hinweis wenn die Kamera von einer anderen App beendet wird, „Neu scannen“ nach einem Ladeproblem.
+- Fehlt die Datei auf dem Server, sagt PFT das jetzt genau so („Datei zxing.min.js fehlt“) statt „bist du online?“.
 
 ## Neu in 1.4.0
 
@@ -25,7 +31,7 @@ Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildsc
 
 **Unter der Haube**
 - **Speicher ohne Grenze:** Daten liegen jetzt in **IndexedDB** statt in einem großen localStorage-Eintrag (dort waren ca. 5 MB Schluss). Alte Daten werden beim ersten Start automatisch übernommen. Eingebaute Lebensmittel in Mahlzeiten werden nur noch als ID + Gramm gespeichert, die Nährwerte kommen beim Laden aus der Lebensmittelliste (eigene Lebensmittel behalten ihre Werte). PFT bittet den Browser außerdem, die Daten dauerhaft zu behalten. Ohne IndexedDB (manche private Modi) läuft alles wie bisher über localStorage.
-- **Code aufgeteilt:** `index.html` (Gerüst), `style.css`, `data.js` (Texte, Übungen, Speicher), `foods.js` (Lebensmittel), `views.js` (Bildschirme, Charts), `app.js` (Bedienung, Scanner, Start). Der Barcode-Leser für iPhone (`vendor/zxing.min.js`, ZXing, Apache-2.0) wird erst beim ersten Scan geladen und dann offline gehalten.
+- **Code aufgeteilt:** `index.html` (Gerüst), `style.css`, `data.js` (Texte, Übungen, Speicher), `foods.js` (Lebensmittel), `views.js` (Bildschirme, Charts), `app.js` (Bedienung, Scanner, Start). Der Barcode-Leser für iPhone (`zxing.min.js`, ZXing, Apache-2.0, Lizenz in `ZXING-LICENSE.txt`) wird beim ersten Scan bzw. kurz nach dem Start geladen und dann offline gehalten.
 
 ## Neu in 1.3.0
 
@@ -67,7 +73,7 @@ Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildsc
 
 ## Auf GitHub aktualisieren
 
-Im bestehenden Repo **Add file → Upload files**, den kompletten Inhalt dieses Ordners hineinziehen – **inklusive des Ordners `vendor`** und der neuen Dateien `style.css`, `data.js`, `foods.js`, `views.js`, `app.js` – und committen (gleichnamige Dateien werden ersetzt, ältere Dateien müssen nicht gelöscht werden). GitHub Pages veröffentlicht nach ca. 1 Minute. Beim nächsten Öffnen mit Internet lädt die App die neue Version (neuer Cache-Name in `sw.js`); falls nicht sofort: App einmal komplett schließen und neu öffnen.
+Im bestehenden Repo **Add file → Upload files**, den kompletten Inhalt dieses Ordners hineinziehen – wichtig sind seit 1.4 auch `style.css`, `data.js`, `foods.js`, `views.js`, `app.js` und `zxing.min.js` – und committen (gleichnamige Dateien werden ersetzt, ältere Dateien müssen nicht gelöscht werden). GitHub Pages veröffentlicht nach ca. 1 Minute. Beim nächsten Öffnen mit Internet lädt die App die neue Version (neuer Cache-Name in `sw.js`); falls nicht sofort: App einmal komplett schließen und neu öffnen.
 
 Erstmalig: neues *public* Repository anlegen, Dateien hochladen, **Settings → Pages → Deploy from a branch → `main` / `(root)`**.
 

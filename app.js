@@ -1,4 +1,4 @@
-/* PFT 1.4.0 – Taps, sheets, gestures, timers, barcode scanner and app start. */
+/* PFT 1.4.1 – Taps, sheets, gestures, timers, barcode scanner and app start. */
 "use strict";
   const VIEWS = { hub: viewHub, train: viewTrain, prog: viewProg, body: viewBody, live: viewLive, session: viewSession, history: viewHistory, progress: viewProgress, exercise: viewExercise, workouts: viewTrain, tpl: viewTpl, sport: viewSport, settings: viewSettings, exlist: viewExlist, cali: viewCali, food: viewFood, meal: viewMeal, foods: viewFoods, mymeals: viewMyMeals, reports: viewReports, report: viewReport };
   const FAB = {
@@ -912,9 +912,10 @@
      Contexts: "foods" (Foods list – open or create the food), "meal" (meal editor – add it),
      "pick" (food picker of a meal line – swap it), "food" (own-food sheet – fill the barcode field).
      Reading uses the browser's BarcodeDetector where it exists (Android, Chrome on Mac) and otherwise
-     ZXing (iPhone), which is loaded only the first time and then kept offline by the service worker.
+     ZXing (iPhone – Safari has no BarcodeDetector), a file next to index.html that is loaded on first use
+     (or a few seconds after start) and then kept offline by the service worker.
      Found codes are looked up in your own foods first, then on Open Food Facts. */
-  const ZX_SRC = "vendor/zxing.min.js?v=a5740af3";
+  const ZX_SRC = "zxing.min.js?v=a5740af3";
   const ICON_SCAN = '<svg class="ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 8v8M10 8v8M12.5 8v8M15 8v8M17 8v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
   const scanBtnHTML = (ctx, cls) => `<button type="button" class="${cls || "scanbtn"}" data-action="scan" data-arg="${ctx}" aria-label="${esc(T("Scan barcode", "Barcode scannen"))}">${ICON_SCAN}</button>`;
 
@@ -934,20 +935,34 @@
 
   let scanSt = null, zxP = null;
   const scanOpen = () => !!scanSt;
+  const hasDetector = () => typeof window.BarcodeDetector === "function";
   function loadZxing() {
     if (window.ZXing) return Promise.resolve();
     if (!zxP) zxP = new Promise((res, rej) => {
       const el = document.createElement("script");
       el.src = ZX_SRC; el.async = true;
-      el.onload = () => (window.ZXing ? res() : rej(new Error("ZXing missing")));
+      el.onload = () => (window.ZXing ? res() : (zxP = null, rej(new Error("ZXing missing"))));
       el.onerror = () => { zxP = null; el.remove(); rej(new Error("load")); };
       document.head.appendChild(el);
     });
     return zxP;
   }
+  /* why ZXing didn't load: offline, or the file is not on the server (e.g. not uploaded to GitHub) */
+  async function zxWhy() {
+    if (navigator.onLine === false) return "offline";
+    try {
+      const r = await fetch(ZX_SRC.split("?")[0] + "?probe=" + Date.now(), { method: "HEAD", cache: "no-store" });
+      return r.status === 404 ? "missing" : r.ok ? "load" : "offline";
+    } catch (e) { return "offline"; }
+  }
+  /* on iPhones: fetch the reader quietly a few seconds after start, so the first scan is quick and works offline */
+  function zxPrefetch() {
+    if (hasDetector() || window.ZXing || navigator.onLine === false || location.protocol === "file:") return;
+    setTimeout(() => { if (!window.ZXing) fetch(ZX_SRC).catch(() => { /* tried again when scanning */ }); }, 6000);
+  }
   /* returns a function video → code | null */
   async function scanDecoder() {
-    if (typeof window.BarcodeDetector === "function") {
+    if (hasDetector()) {
       try {
         const have = await window.BarcodeDetector.getSupportedFormats(), want = ["ean_13", "ean_8", "upc_a", "upc_e"].filter((f) => have.includes(f));
         if (want.length) { const det = new window.BarcodeDetector({ formats: want }); return async (v) => { const r = await det.detect(v); return r && r.length ? r[0].rawValue : null; }; }
@@ -979,6 +994,7 @@
     $("scanErr").textContent = o.err || "";
     $("scanAfter").hidden = !o.after;
     $("scanRetry").hidden = !o.retry;
+    $("scanManual").hidden = !!o.noManual;
     $("scanBusy").hidden = !o.busy;
   }
   function scanStop(s) {
@@ -994,8 +1010,8 @@
     const s = scanSt = { ctx, ret, done: false, stream: null, timer: 0, decode: null, code: "" };
     $("scanCode").value = "";
     $("scanTitle").textContent = ctx === "food" ? T("Barcode of this food", "Barcode dieses Lebensmittels") : T("Scan barcode", "Barcode scannen");
-    $("scanHint").textContent = ctx === "meal" || ctx === "pick" ? T("Hold the barcode inside the frame – the product goes straight into your meal.", "Halte den Barcode in den Rahmen – das Produkt kommt direkt in deine Mahlzeit.")
-      : T("Hold the barcode inside the frame – it is read by itself.", "Halte den Barcode in den Rahmen – er wird von selbst erkannt.");
+    $("scanHint").textContent = ctx === "meal" || ctx === "pick" ? T("Hold the barcode inside the frame, about 15–20 cm away – the product goes straight into your meal.", "Halte den Barcode in den Rahmen, etwa 15–20 cm entfernt – das Produkt kommt direkt in deine Mahlzeit.")
+      : T("Hold the barcode inside the frame, about 15–20 cm away – it is read by itself.", "Halte den Barcode in den Rahmen, etwa 15–20 cm entfernt – er wird von selbst erkannt.");
     $("scan").hidden = false;
     document.body.classList.add("scanning");
     scanCam(s);
@@ -1004,15 +1020,29 @@
     scanUI(T("Starting the camera …", "Kamera wird gestartet …"), { busy: true });
     const md = navigator.mediaDevices;
     if (!md || typeof md.getUserMedia !== "function") { scanNoCam(s, "nocam"); return; }
-    const [dec, cam] = await Promise.allSettled([scanDecoder(), md.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } })]);
+    // camera and reader start together: the permission question and the download overlap
+    const getCam = () => md.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } } })
+      .catch((e) => (e && e.name === "OverconstrainedError" ? md.getUserMedia({ audio: false, video: true }) : Promise.reject(e)));
+    let [dec, cam] = await Promise.allSettled([scanDecoder(), getCam()]);
     if (scanSt !== s || s.done) { if (cam.status === "fulfilled") cam.value.getTracks().forEach((t) => t.stop()); return; }
     if (cam.status === "rejected") { const n = cam.reason && cam.reason.name; scanNoCam(s, n === "NotAllowedError" || n === "SecurityError" ? "denied" : "nocam"); return; }
     s.stream = cam.value;
-    if (dec.status === "rejected") { scanStop(s); scanNoCam(s, "load"); return; }
+    if (dec.status === "rejected") { // one more try (a dropped connection), then say why
+      [dec] = await Promise.allSettled([scanDecoder()]);
+      if (scanSt !== s || s.done) { scanStop(s); return; }
+      if (dec.status === "rejected") { scanStop(s); scanNoCam(s, await zxWhy()); return; }
+    }
     s.decode = dec.value;
+    const track = s.stream.getVideoTracks()[0];
+    if (track) {
+      track.addEventListener("ended", () => { if (scanSt === s && !s.done) { scanStop(s); scanUI(T("The camera was stopped (another app?). Tap “Scan again” or type the number.", "Die Kamera wurde beendet (andere App?). „Neu scannen“ antippen oder die Nummer eintippen."), { nocam: true, after: true, noManual: true }); } });
+      try { if (track.getCapabilities && (track.getCapabilities().focusMode || []).includes("continuous")) track.applyConstraints({ advanced: [{ focusMode: "continuous" }] }).catch(() => {}); } catch (e) { /* no focus control */ }
+    }
     const v = $("scanVideo");
-    v.muted = true; v.setAttribute("playsinline", ""); v.srcObject = s.stream;
-    try { await v.play(); } catch (e) { /* autoplay with a muted video normally works */ }
+    v.muted = true; v.defaultMuted = true; v.autoplay = true; v.setAttribute("playsinline", ""); v.setAttribute("webkit-playsinline", "");
+    v.srcObject = s.stream;
+    // iPhone: play() can hang until the first frame – don't wait for it forever
+    await Promise.race([v.play().catch(() => {}), new Promise((r) => setTimeout(r, 1500))]);
     if (scanSt !== s || s.done) { scanStop(s); return; }
     scanUI("", { live: true });
     scanTick(s);
@@ -1020,14 +1050,19 @@
   function scanNoCam(s, why) {
     if (scanSt !== s) return;
     const msg = why === "denied" ? T("No access to the camera. Allow it for PFT (iPhone: Settings › Safari › Camera) – or type the number below.", "Kein Zugriff auf die Kamera. Erlaube ihn für PFT (iPhone: Einstellungen › Safari › Kamera) – oder tippe die Nummer unten ein.")
-      : why === "load" ? T("The scanner couldn't be loaded – are you online? Type the number below.", "Der Scanner konnte nicht geladen werden – bist du online? Tippe die Nummer unten ein.")
+      : why === "missing" ? T("The barcode reader (file zxing.min.js) is missing on your site – upload it next to index.html. Until then: type the number below.", "Der Barcode-Leser (Datei zxing.min.js) fehlt auf deiner Seite – lade ihn neben index.html hoch. Bis dahin: Nummer unten eintippen.")
+      : why === "offline" ? T("The barcode reader is loaded once over the internet – you seem to be offline. Type the number below.", "Der Barcode-Leser wird einmal aus dem Internet geladen – du scheinst offline zu sein. Tippe die Nummer unten ein.")
+      : why === "load" ? T("The barcode reader couldn't be started. Close PFT completely, open it again and try once more – or type the number below.", "Der Barcode-Leser ließ sich nicht starten. PFT ganz schließen, neu öffnen und nochmal versuchen – oder die Nummer unten eintippen.")
       : T("No camera available – type the number below.", "Keine Kamera verfügbar – tippe die Nummer unten ein.");
-    scanUI(msg, { nocam: true });
+    // "Scan again" after a loading problem (back online, file uploaded …)
+    scanUI(msg, { nocam: true, after: why !== "nocam" && why !== "denied", noManual: true });
     setTimeout(() => { if (scanSt === s && !s.done) $("scanCode").focus(); }, 60);
   }
   function scanTick(s) {
     if (scanSt !== s || s.done || !s.decode) return;
     const v = $("scanVideo");
+    if (!s.t0) s.t0 = Date.now();
+    if (!s.nudged && (v.paused || v.readyState < 2) && Date.now() - s.t0 > 2500) { s.nudged = true; $("scanMsg").textContent = T("Camera picture stays black? Tap it.", "Kamerabild bleibt schwarz? Einmal antippen."); }
     Promise.resolve().then(() => (v.readyState >= 2 ? s.decode(v) : null)).then((raw) => {
       if (scanSt !== s || s.done) return;
       const c = codeDigits(raw || "");
@@ -1077,6 +1112,12 @@
     const a = document.activeElement; if (a && $("scan").contains(a)) a.blur();
   }
   $("scanClose").addEventListener("click", closeScan);
+  // a tap on the picture starts the video if the phone held it back
+  document.querySelector(".scan-cam").addEventListener("click", () => {
+    const s = scanSt, v = $("scanVideo");
+    if (s && s.stream && !s.done) { v.play().catch(() => {}); if (s.nudged && v.readyState >= 2) $("scanMsg").textContent = ""; }
+  });
+  zxPrefetch();
   $("scanForm").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const s = scanSt; if (!s) return;

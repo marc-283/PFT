@@ -1,4 +1,4 @@
-/* PFT 1.4.0 – Charts and all screens. */
+/* PFT 1.4.1 – Charts and all screens. */
 "use strict";
   /* ================= Derived data (rebuilt when data changes) ================= */
   let memo = { ver: -1 };

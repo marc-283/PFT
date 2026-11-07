@@ -1,8 +1,8 @@
 /* PFT offline cache. Any change gives a new cache name, so the app updates itself the next time it is online.
    Files are fetched past the browser cache, and versioned files (?v=…) are matched exactly, so old and new never mix. */
-const CACHE = "pft-1.4.0-4fd2c885";
-const FILES = ["./", "index.html", "style.css?v=393e7f79", "data.js?v=5f564051", "foods.js?v=d6384c1e", "views.js?v=733c3df9", "app.js?v=32ad9f82", "manifest.webmanifest", "splash.jpg", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png", "fonts/barlow-latin-400-normal.woff2", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2", "fonts/barlow-latin-700-normal.woff2", "fonts/barlow-condensed-latin-600-normal.woff2", "fonts/barlow-condensed-latin-700-normal.woff2", "fonts/barlow-condensed-latin-800-normal.woff2"];
-const LAZY = ["vendor/zxing.min.js"]; /* loaded on first use (barcode scanner) and then kept offline */
+const CACHE = "pft-1.4.1-c861f1d9";
+const FILES = ["./", "index.html", "style.css?v=a4de8257", "data.js?v=3ee7da90", "foods.js?v=e4966534", "views.js?v=9096a172", "app.js?v=89e14107", "manifest.webmanifest", "splash.jpg", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png", "fonts/barlow-latin-400-normal.woff2", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2", "fonts/barlow-latin-700-normal.woff2", "fonts/barlow-condensed-latin-600-normal.woff2", "fonts/barlow-condensed-latin-700-normal.woff2", "fonts/barlow-condensed-latin-800-normal.woff2"];
+const LAZY = ["zxing.min.js"]; /* loaded on first use (barcode scanner) and then kept offline */
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", (e) => {
