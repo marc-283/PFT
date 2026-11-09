@@ -1,4 +1,4 @@
-/* PFT 1.4.1 – Charts and all screens. */
+/* PFT 1.5.0 – Charts and all screens. */
 "use strict";
   /* ================= Derived data (rebuilt when data changes) ================= */
   let memo = { ver: -1 };
@@ -89,7 +89,7 @@
   const state = {
     stack: null, tab: "today", stacks: null, progSeg: "strength", wRange: "90d", wAll: false, enter: false, armed: null, histFilter: "all", histN: 60,
     pRange: "12w", pMetric: "vol", gWin: "week", exRange: "all", exMetric: {}, exLv: {}, spRange: "12w", spMetric: {}, exAll: false,
-    pick: null, full: null, foodDay: null, fRange: "14d", fMetric: "kcal", exQ: "", foodQ: "", repType: "m", repCmp: "prev", repMetric: "dur", xm: null
+    pick: null, full: null, foodDay: null, fRange: "14d", fMetric: "kcal", fOpen: false, histMonth: null, histDay: null, rirOpen: null, exQ: "", foodQ: "", repType: "m", repCmp: "prev", repMetric: "dur", xm: null
   };
   state.stacks = { today: [{ v: "hub" }], train: [{ v: "train" }], food: [{ v: "food" }], prog: [{ v: "prog" }], more: [{ v: "settings" }] };
   state.stack = state.stacks.today;
@@ -276,59 +276,72 @@
     return out;
   }
   function exCard(e, i, d) {
-    const x = exOf(e.id), last = lastFor(e.id, d, e.lv), tm = x.kind === "time", ph = placeholders(e, x, last);
+    const x = exOf(e.id), last = lastFor(e.id, d, e.lv), tm = x.kind === "time", ph = placeholders(e, x, last), rir = db.settings.rir && !tm;
     let n = 0;
     const lastWork = (() => { let k = -1; e.sets.forEach((s, j) => { if (s.done && !s.wu && !s.drop) k = j; }); return k; })();
     const rows = e.sets.map((s, j) => {
       const label = s.wu ? T("W", "A") : s.drop ? "D" : String(++n), p = ph[j], id = `s-${i}-${j}`;
       const dropBtn = x.kind === "kg" && j === lastWork && !(e.sets[j + 1] && e.sets[j + 1].drop) ? `<button type="button" class="dropadd" data-action="set-drop" data-arg="${i}:${j}">+ ${esc(T("Drop set", "Dropsatz"))} <span>${esc(T("less weight, right away", "weniger Gewicht, direkt danach"))}</span></button>` : "";
-      return `<div class="setgrid setrow${s.done ? " done" : ""}${tm ? " tm" : ""}${s.drop ? " drop" : ""}">
+      const rirPick = rir && state.rirOpen === `${i}:${j}` ? `<div class="rirpick" role="group" aria-label="${esc(T("Reps in reserve", "Wiederholungen in Reserve"))}"><span class="label">RIR</span>${[0, 1, 2, 3, 4].map((v) => `<button type="button" data-action="rir-pick" data-arg="${i}:${j}:${v}" aria-pressed="${s.rir === v}">${v}</button>`).join("")}<button type="button" data-action="rir-pick" data-arg="${i}:${j}:x" aria-label="${esc(T("No RIR", "Kein RIR"))}">–</button></div>` : "";
+      return `<div class="setgrid setrow${s.done ? " done" : ""}${tm ? " tm" : ""}${s.drop ? " drop" : ""}${rir ? " rir" : ""}">
         <button type="button" class="setno${s.wu ? " wu" : ""}${s.drop ? " dr" : ""}" data-action="set-wu" data-arg="${i}:${j}" aria-label="${esc(T(`Set ${label} – tap: warm-up / drop set / normal`, `Satz ${label} – antippen: Aufwärmsatz / Dropsatz / normal`))}">${label}</button>
-        <span class="prev">${esc(p.prev)}</span>
+        <span class="prev">${esc(rir ? p.prev.replace(/ kg × /, "×").replace(/ Wdh\.| reps/, "") : p.prev)}</span>
         ${tm ? `<input class="sin" id="${id}-t" data-i="${i}" data-j="${j}" data-f="t" inputmode="numeric" autocomplete="off" placeholder="${esc(p.t)}" value="${esc(s.t)}" aria-label="${esc(T("Seconds", "Sekunden"))}">`
           : `<input class="sin" id="${id}-w" data-i="${i}" data-j="${j}" data-f="w" inputmode="decimal" autocomplete="off" placeholder="${esc(p.w || (x.kind === "bw" ? "0" : ""))}" value="${esc(s.w)}" aria-label="${esc(x.kind === "bw" ? T("Added weight in kg", "Zusatzgewicht in kg") : T("Weight in kg", "Gewicht in kg"))}"><input class="sin" id="${id}-r" data-i="${i}" data-j="${j}" data-f="r" inputmode="numeric" autocomplete="off" placeholder="${esc(p.r)}" value="${esc(s.r)}" aria-label="${esc(T("Reps", "Wiederholungen"))}">`}
+        ${rir ? `<button type="button" class="rirchip${s.rir != null ? " on" : ""}" data-action="set-rir" data-arg="${i}:${j}" aria-label="${esc(T(`RIR for set ${label}`, `RIR für Satz ${label}`))}">${s.rir != null ? s.rir : "RIR"}</button>` : ""}
         <button type="button" class="setchk" data-action="set-done" data-arg="${i}:${j}" aria-pressed="${s.done}" aria-label="${esc(T(`Tick off set ${label}`, `Satz ${label} abhaken`))}">✓</button>
-      </div>${dropBtn}`;
+      </div>${rirPick}${dropBtn}`;
     }).join("");
     const goal = todayGoal(e, x, last), ss = ssInfo(d.ex, i), rs = restFor(e);
-    const lastTxt = last ? `${esc(T("Last time", "Letztes Mal"))} (${esc(dayMonth.format(isoDate(last.s.date)))}): <b>${esc(setsSummary(last.e, x.kind))}</b>` : esc(T("First time – good luck!", "Zum ersten Mal dabei – viel Erfolg!"));
+    const lastDay = last ? esc(T(`last time ${dayMonth.format(isoDate(last.s.date))}`, `letztes Mal ${dayMonth.format(isoDate(last.s.date))}`)) : "";
+    const note = (db.settings.exNotes || {})[e.id] || "";
     const armed = state.armed === `ex-del:${i}`;
     const lvSel = hasLv(x) ? `<label class="lvrow"><span class="label">${esc(T("Level", "Stufe"))}</span><select class="psel lvsel" data-i="${i}" aria-label="${esc(T("Level", "Stufe"))}">${x.lv.map((_, k) => `<option value="${k}"${lvKey(x, e.lv) === k ? " selected" : ""}>${k + 1}. ${esc(lvName(x, k))}</option>`).join("")}</select></label>` : "";
     return `<section class="card excard${ss ? ` ss${ss.first ? " ssfirst" : ""}${ss.last ? " sslast" : ""}` : ""}" data-ex="${i}">
       ${ss ? `<span class="sstag">${esc(T("Superset", "Supersatz"))} ${ss.letter}${ss.pos} <small>${esc(ss.last ? T("rest after this one", "danach Pause") : T("straight to the next, no rest", "direkt weiter, ohne Pause"))}</small></span>` : ""}
       <div class="exhead">${badgeEx(x)}<button type="button" class="exname" data-action="xm" data-arg="d:${i}" aria-label="${esc(T(`${exName(x)} – options: swap, edit, move, remove`, `${exName(x)} – Optionen: tauschen, bearbeiten, verschieben, entfernen`))}"><b>${esc(exName(x))}</b><span class="exmeta"><i style="background:${GROUP_COLORS[x.group] || "#D4D4D8"}"></i>${esc(groupName(x.group))} · ${esc(kindShort(x.kind))}${e.tr ? ` · ${esc(T("Target", "Ziel"))} ${esc(e.tr)} ${tm ? "s" : T("reps", "Wdh.")}` : ""}</span></button>
         <span class="exbtns">${armed ? `<button type="button" class="btn sm danger armed" data-action="ex-del" data-arg="${i}">${esc(T("Remove?", "Weg?"))}</button>` : `<button type="button" class="mbtn sm xmbtn" data-action="xm" data-arg="d:${i}" aria-label="${esc(T("Exercise options", "Optionen zur Übung"))}">⋯</button>`}</span></div>
+      ${note ? `<button type="button" class="exnote" data-action="ex-note" data-arg="${esc(e.id)}" aria-label="${esc(T("Edit note", "Notiz bearbeiten"))}">${esc(note)}</button>` : ""}
       ${lvSel}
-      <p class="lasttime">${lastTxt}</p>
-      ${goal ? `<p class="todaygoal"><span class="label">${esc(T("Today", "Heute"))}</span><span>${goal}</span></p>` : ""}
+      ${goal ? `<p class="todaygoal"><span class="label">${esc(T("Today", "Heute"))}</span><span>${goal} <small>· ${lastDay}</small></span></p>`
+        : `<p class="lasttime">${last ? `${lastDay.charAt(0).toUpperCase()}${lastDay.slice(1)}` : esc(T("First time – good luck!", "Zum ersten Mal dabei – viel Erfolg!"))}</p>`}
       <div class="sets">
-        <div class="setgrid sethead${tm ? " tm" : ""}" aria-hidden="true"><span>${esc(T("Set", "Satz"))}</span><span>${esc(T("Previous", "Vorher"))}</span>${tm ? `<span>${esc(T("Sec", "Sek."))}</span>` : `<span>${x.kind === "bw" ? "+kg" : "kg"}</span><span>${esc(T("Reps", "Wdh."))}</span>`}<span>✓</span></div>
+        <div class="setgrid sethead${tm ? " tm" : ""}${rir ? " rir" : ""}" aria-hidden="true"><span>${esc(T("Set", "Satz"))}</span><span>${esc(T("Previous", "Vorher"))}</span>${tm ? `<span>${esc(T("Sec", "Sek."))}</span>` : `<span>${x.kind === "bw" ? "+kg" : "kg"}</span><span>${esc(T("Reps", "Wdh."))}</span>`}${rir ? "<span>RIR</span>" : ""}<span>✓</span></div>
         ${rows}
       </div>
       <div class="btnrow"><button type="button" class="btn sm" data-action="set-add" data-arg="${i}">+ ${esc(T("Set", "Satz"))}</button>${e.sets.length ? `<button type="button" class="btn sm" data-action="set-del" data-arg="${i}">− ${esc(T("Set", "Satz"))}</button>` : ""}<button type="button" class="btn sm restchip" data-action="rest-ex" data-arg="d:${i}" aria-label="${esc(T("Rest for this exercise", "Pause für diese Übung"))}">⏱ ${esc(ss && !ss.last ? T("no rest", "ohne Pause") : restTxt(rs))}</button></div>
     </section>`;
   }
-  /* "Today: 82.5 kg × 8" – the progression tip from the exercise screen, right where you need it */
-  function todayGoal(e, x, last) {
-    if (!last) return "";
-    const work = last.e.sets.filter((q) => !q.wu && !q.drop && (x.kind === "time" ? +q.t > 0 : +q.r > 0)); if (!work.length) return "";
+  /* "Today: 82.5 kg × 8" – the progression tip, right where you need it. Returns the text and a check whether a
+     finished exercise reached it (for "goals reached" after the workout); null without history. */
+  const workSets = (e, kind) => (e.sets || []).filter((q) => !q.wu && !q.drop && (kind === "time" ? +q.t > 0 : +q.r > 0));
+  function goalOf(e, x, last) {
+    if (!last) return null;
+    const work = workSets(last.e, x.kind); if (!work.length) return null;
     const lv = hasLv(x) ? lvKey(x, e.lv) : null, sameLv = !hasLv(x) || last.e.lv == null || lvKey(x, last.e.lv) === lv;
+    const lvUp = (e2) => hasLv(x) && lvKey(x, e2.lv) > lvKey(x, last.e.lv);
     if (x.kind === "time") {
       const best = Math.max(...work.map((q) => +q.t));
-      if (!sameLv) return esc(T("New level – start with short holds.", "Neue Stufe – mit kurzen Haltezeiten starten."));
-      return hasLv(x) && lv < x.lv.length - 1 && best >= 30 ? T(`<b>${best + 5} s</b> – or try <b>${esc(lvName(x, lv + 1))}</b>`, `<b>${best + 5} s</b> – oder <b>${esc(lvName(x, lv + 1))}</b> probieren`) : T(`<b>${best + 5} s</b> in your best set`, `<b>${best + 5} s</b> im besten Satz`);
+      if (!sameLv) return { html: esc(T("New level – start with short holds.", "Neue Stufe – mit kurzen Haltezeiten starten.")) };
+      return { html: hasLv(x) && lv < x.lv.length - 1 && best >= 30 ? T(`<b>${best + 5} s</b> – or try <b>${esc(lvName(x, lv + 1))}</b>`, `<b>${best + 5} s</b> – oder <b>${esc(lvName(x, lv + 1))}</b> probieren`) : T(`<b>${best + 5} s</b> in your best set`, `<b>${best + 5} s</b> im besten Satz`),
+        met: (e2) => lvUp(e2) || workSets(e2, "time").some((q) => +q.t >= best + 5) };
     }
     if (x.kind === "bw") {
       const best = Math.max(...work.map((q) => +q.r)), add = Math.max(...work.map((q) => +q.w || 0));
-      if (!sameLv) return esc(T("New level – find your rep count.", "Neue Stufe – erst mal Wiederholungen finden."));
-      return hasLv(x) && lv < x.lv.length - 1 && best >= 8 ? T(`<b>${best + 1} reps</b> – or try <b>${esc(lvName(x, lv + 1))}</b>`, `<b>${best + 1} Wdh.</b> – oder <b>${esc(lvName(x, lv + 1))}</b> probieren`) : T(`<b>${add ? `+${nf.format(add)} kg × ` : ""}${best + 1} reps</b> in your best set`, `<b>${add ? `+${nf.format(add)} kg × ` : ""}${best + 1} Wdh.</b> im besten Satz`);
+      if (!sameLv) return { html: esc(T("New level – find your rep count.", "Neue Stufe – erst mal Wiederholungen finden.")) };
+      return { html: hasLv(x) && lv < x.lv.length - 1 && best >= 8 ? T(`<b>${best + 1} reps</b> – or try <b>${esc(lvName(x, lv + 1))}</b>`, `<b>${best + 1} Wdh.</b> – oder <b>${esc(lvName(x, lv + 1))}</b> probieren`) : T(`<b>${add ? `+${nf.format(add)} kg × ` : ""}${best + 1} reps</b> in your best set`, `<b>${add ? `+${nf.format(add)} kg × ` : ""}${best + 1} Wdh.</b> im besten Satz`),
+        met: (e2) => lvUp(e2) || workSets(e2, "bw").some((q) => +q.r >= best + 1 && (+q.w || 0) >= add) };
     }
     const w = Math.max(...work.map((q) => +q.w || 0)), top = work.filter((q) => (+q.w || 0) === w);
     const nums = String(e.tr || last.e.tr || "").match(/\d+/g), hiR = nums ? +nums[nums.length - 1] : 12, loR = nums ? +nums[0] : null;
     const inc = /Beine|Rücken|Po/.test(x.group) && w >= 40 ? 5 : 2.5;
-    if (Math.min(...top.map((q) => +q.r)) >= hiR) return T(`<b>${esc(kg(w + inc))}${loR ? ` × ${loR}–${hiR}` : ""}</b> – last time all sets at ${hiR} reps`, `<b>${esc(kg(w + inc))}${loR ? ` × ${loR}–${hiR}` : ""}</b> – letztes Mal alle Sätze mit ${hiR} Wdh.`);
-    return T(`<b>${esc(kg(w))} × ${top.map((q) => Math.min(hiR, +q.r + 1)).join(" · ")}</b> – one more rep per set`, `<b>${esc(kg(w))} × ${top.map((q) => Math.min(hiR, +q.r + 1)).join(" · ")}</b> – eine Wdh. mehr pro Satz`);
+    // all sets at the top of the range → more weight; otherwise one more rep per set (the "Previous" column shows why)
+    if (Math.min(...top.map((q) => +q.r)) >= hiR) return { html: `<b>${esc(kg(w + inc))}${loR ? ` × ${loR}–${hiR}` : ` × ${hiR}`}</b>`, met: (e2) => workSets(e2, "kg").some((q) => (+q.w || 0) >= w + inc && +q.r >= (loR || hiR)) };
+    const want = top.map((q) => Math.min(hiR, +q.r + 1)).sort((a, b) => b - a);
+    return { html: `<b>${esc(kg(w))} × ${top.map((q) => Math.min(hiR, +q.r + 1)).join(" · ")}</b>`,
+      met: (e2) => { const got = workSets(e2, "kg").filter((q) => (+q.w || 0) >= w).map((q) => +q.r).sort((a, b) => b - a); return want.every((r, k) => got[k] >= r); } };
   }
+  const todayGoal = (e, x, last) => { const g = goalOf(e, x, last); return g ? g.html : ""; };
   function draftTotals(d) {
     let done = 0, vol = 0;
     for (const e of d.ex) { const k = exOf(e.id).kind; for (const s of e.sets) if (s.done && !s.wu) { if (!s.drop) done++; if (k === "kg") vol += (parseNum(s.w) || 0) * (parseNum(s.r) || 0); } }
@@ -373,7 +386,7 @@
       const lines = e.sets.map((q) => {
         const lab = q.wu ? T("W", "A") : q.drop ? "D" : String(++n), best = q === st.best;
         const extra = x.kind === "kg" && !q.wu && !q.drop && +q.r > 0 ? `e1RM ${nf1.format(e1rmOf(+q.w, +q.r))}` : q.drop ? T("drop set", "Dropsatz") : "";
-        return `<div class="sline${best ? " best" : ""}"><span class="n${q.wu ? " wu" : ""}${q.drop ? " dr" : ""}">${lab}</span><span class="w">${esc(setTxt(q, x.kind))}</span><span class="e">${extra}</span></div>`;
+        return `<div class="sline${best ? " best" : ""}"><span class="n${q.wu ? " wu" : ""}${q.drop ? " dr" : ""}">${lab}</span><span class="w">${esc(setTxt(q, x.kind))}${q.rir != null ? ` <small class="rirtag">RIR ${q.rir}</small>` : ""}</span><span class="e">${extra}</span></div>`;
       }).join("");
       const key = x.kind === "kg" ? `e1RM ${nf1.format(st.e1rm)} kg` : x.kind === "bw" ? pl(st.total, "rep") : st.time ? secTxt(st.time) : "";
       return `<section class="sec"><div class="sechead"><button class="more" style="color:var(--ink);text-align:left" data-action="ex" data-arg="${esc(e.id)}"><span class="sectitle" style="font-size:20px">${esc(exName(x))} ›</span></button><span class="label">${esc(key)}</span></div>${hasLv(x) ? `<p class="hint" style="margin:-2px 0 4px">${esc(T("Level", "Stufe"))}: ${esc(lvName(x, lvKey(x, e.lv)))}</p>` : ""}<div class="setlines">${lines}</div></section>`;
@@ -387,6 +400,7 @@
       <p class="meta">${esc(dayTxt(s.date))}${s.time ? ` · ${esc(s.time)}${LANG === "de" ? " Uhr" : ""}` : ""} · ${esc(sportName(s.sport))}${s.example ? ` · ${esc(T("Sample", "Beispiel"))}` : ""}</p>
       ${v.fresh ? `<div class="notice" style="border-style:solid">${esc(T("Workout saved. Strong – keep it up!", "Training gespeichert. Stark – weiter so!"))}</div>` : ""}
       ${st3([T("Duration", "Dauer"), durTxt(s.dur)], [T("Volume", "Volumen"), tons(t.vol)], [T("Sets", "Sätze"), String(t.sets)])}
+      ${v.fresh ? compareCard(s, prs.length) : ""}
       ${prHTML}
       ${blocks}
       ${s.note ? `<section class="card"><span class="label">${esc(T("Note", "Notiz"))}</span><p style="white-space:pre-wrap">${esc(s.note)}</p></section>` : ""}
@@ -394,24 +408,70 @@
       <div class="btnrow"><button class="btn" data-action="tpl-from" data-arg="${esc(s.id)}">${esc(T("Save as workout", "Als Workout speichern"))}</button></div>`;
   }
 
+  /* the session to compare with: the last one of the same workout plan, otherwise the last one of the same sport */
+  function prevSession(s) {
+    const key = (q) => `${q.date} ${q.time || ""} ${q.created || ""}`, k = key(s), D = derived();
+    const before = (q) => q.id !== s.id && key(q) < k;
+    return (s.tpl && D.desc.find((q) => before(q) && q.tpl === s.tpl)) || D.desc.find((q) => before(q) && q.sport === s.sport) || null;
+  }
+  /* "Compared with last time": volume ±%, duration, hard sets, Today goals reached, new records */
+  function compareCard(s, nPr) {
+    const p = prevSession(s);
+    if (!p) return `<section class="card cmpcard"><span class="label">${esc(T("Compared with last time", "Im Vergleich zum letzten Mal"))}</span><p>${esc(T("Your first workout of this kind – next time you'll see the comparison here.", "Dein erstes Training dieser Art – beim nächsten Mal siehst du hier den Vergleich."))}</p>${nPr ? `<p>${esc(T(`${pl(nPr, "record")} today.`, `${nPr} ${nPr === 1 ? "Rekord" : "Rekorde"} heute.`))}</p>` : ""}</section>`;
+    const a = sessionTot(s), b = sessionTot(p), cs = dayMonth.format(isoDate(p.date));
+    let gN = 0, gY = 0;
+    for (const e of s.ex || []) {
+      const x = exOf(e.id), g = goalOf(e, x, lastFor(e.id, { editOf: s.id, date: s.date }, e.lv));
+      if (g && g.met) { gY++; if (g.met(e)) gN++; }
+    }
+    return `<section class="card cmpcard"><span class="label">${esc(T("Compared with last time", "Im Vergleich zum letzten Mal"))}</span>
+      <p class="hint">${esc(p.name || sportName(p.sport))} · ${esc(dayTxt(p.date))}</p>
+      <div class="kpis">${kpiRows([[T("Volume", "Volumen"), a.vol, b.vol, tons], [T("Duration", "Dauer"), s.dur || 0, p.dur || 0, durTxt, { neutral: true }], [T("Hard sets", "Harte Sätze"), a.sets, b.sets, (v) => nf0.format(v)]], cs)}
+      ${gY ? `<div class="kpirow"><span class="k">${esc(T("Today goals reached", "„Heute“-Ziele erreicht"))}</span><span class="v"><b>${esc(T(`${gN} of ${gY} exercises`, `${gN} von ${gY} Übungen`))}</b></span><span class="dl ${gN === gY ? "up" : ""}">${gN === gY ? "✓" : ""}</span></div>` : ""}
+      <div class="kpirow"><span class="k">${esc(T("New records", "Neue Rekorde"))}</span><span class="v"><b>${nPr ? `🏆 ${nPr}` : "–"}</b></span><span class="dl"></span></div></div></section>`;
+  }
+
   /* ---------- History ---------- */
+  /* month grid Mo–Su with a coloured dot per sport; tap a day to filter the list, tap again to clear */
+  function histCalendar(list) {
+    const today = todayISO(), mon = state.histMonth || today.slice(0, 7), first = `${mon}-01`, d0 = isoDate(first);
+    const nDays = new Date(d0.getFullYear(), d0.getMonth() + 1, 0).getDate(), pad = (d0.getDay() + 6) % 7;
+    const byDay = new Map();
+    for (const q of list) { if (q.date.slice(0, 7) !== mon) continue; const set = byDay.get(q.date) || new Set(); set.add(q.sport); byDay.set(q.date, set); }
+    const wd = Array.from({ length: 7 }, (_, k) => `<span class="wd">${esc(wdShort.format(isoDate(addDays(weekStart(first), k))).replace(".", "").slice(0, 2))}</span>`).join("");
+    let cells = "";
+    for (let k = 0; k < pad; k++) cells += `<span class="cblank"></span>`;
+    for (let n = 1; n <= nDays; n++) {
+      const day = `${mon}-${String(n).padStart(2, "0")}`, sp = byDay.get(day), fut = day > today;
+      const dots = sp ? [...sp].slice(0, 4).map((k) => `<i style="background:${SPORTS[k].color}"></i>`).join("") : "";
+      cells += `<button type="button" class="cday${day === today ? " today" : ""}${state.histDay === day ? " sel" : ""}${sp ? " has" : ""}" data-action="cal-day" data-arg="${day}"${fut ? " disabled" : ""} aria-label="${esc(dateFmt.format(isoDate(day)))}${sp ? ` – ${esc([...sp].map(sportName).join(", "))}` : ""}" aria-pressed="${state.histDay === day}"><span class="dn">${n}</span><span class="dots">${dots}</span></button>`;
+    }
+    const isNow = mon >= today.slice(0, 7), nMon = byDay.size;
+    return `<section class="cal" aria-label="${esc(T("Calendar", "Kalender"))}">
+      <div class="calhead"><button type="button" class="mbtn" data-action="cal-m" data-arg="-1" aria-label="${esc(T("Previous month", "Vorheriger Monat"))}">‹</button><b>${esc(monthLong.format(d0))} ${d0.getFullYear()}</b><button type="button" class="mbtn" data-action="cal-m" data-arg="1"${isNow ? " disabled" : ""} aria-label="${esc(T("Next month", "Nächster Monat"))}">›</button></div>
+      <div class="calgrid">${wd}${cells}</div>
+      <p class="hint calsub">${esc(nMon ? T(`Trained on ${pl(nMon, "day")} – tap a day to see it`, `An ${nMon} ${nMon === 1 ? "Tag" : "Tagen"} trainiert – Tag antippen zum Anzeigen`) : T("No training this month", "Kein Training in diesem Monat"))}</p></section>`;
+  }
   function viewHistory(v, emb) {
-    const D = derived(), f = state.histFilter;
-    const list = D.desc.filter((s) => f === "all" || s.sport === f);
+    const D = derived(), f = state.histFilter, day = state.histDay;
+    const all = D.desc.filter((s) => f === "all" || s.sport === f), list = day ? all.filter((s) => s.date === day) : all;
     const chips = [["all", T("All", "Alle"), ""]].concat(Object.keys(SPORTS).map((k) => [k, sportName(k), SPORTS[k].color]))
       .map(([k, t, c]) => `<button class="fchip" data-action="hist-filter" data-arg="${k}" aria-pressed="${f === k}">${c ? `<i style="background:${c}"></i>` : ""}${esc(t)}</button>`).join("");
     return `
       ${emb ? "" : `${backBar()}<h1 class="vtitle">${esc(T("History", "Verlauf"))}</h1>`}
+      ${histCalendar(all)}
+      ${day ? `<button class="fchip dayfilter" data-action="cal-day" data-arg="${day}" aria-pressed="true">${esc(dateFmt.format(isoDate(day)))} <span aria-hidden="true">✕</span><span class="sr">${esc(T("Show all days", "Alle Tage zeigen"))}</span></button>` : ""}
       <p class="meta">${pl(list.length, "session")}${list.length ? ` · ${esc(T("total", "insgesamt"))} ${durTxt(list.reduce((a, s) => a + (s.dur || 0), 0))}` : ""}</p>
       <div class="chiprow" role="group" aria-label="${esc(T("Sport", "Sportart"))}">${chips}</div>
-      <section class="sec">${list.length ? monthGroups(list, state.histN) : emptyBox(T("Nothing here yet", "Noch nichts hier"), esc(T("As soon as you finish a workout or log a run, it shows up here.", "Sobald du ein Training beendest oder einen Lauf einträgst, erscheint es hier.")), `<button class="btn primary" data-action="start">${esc(T("Start workout", "Training starten"))}</button>`)}
+      <section class="sec">${list.length ? monthGroups(list, state.histN) : day ? `<p class="hint" style="padding:8px 0">${esc(T("Nothing logged on this day.", "An diesem Tag nichts eingetragen."))}</p>` : emptyBox(T("Nothing here yet", "Noch nichts hier"), esc(T("As soon as you finish a workout or log a run, it shows up here.", "Sobald du ein Training beendest oder einen Lauf einträgst, erscheint es hier.")), `<button class="btn primary" data-action="start">${esc(T("Start workout", "Training starten"))}</button>`)}
         ${list.length > state.histN ? `<button class="more" data-action="hist-more">${esc(T("Show more", "Weitere anzeigen"))} (${list.length - state.histN})</button>` : ""}</section>`;
   }
 
   /* ---------- Gym progress ---------- */
   function viewProgress(v, emb) {
     const D = derived(), gym = D.desc.filter((s) => s.sport === "gym"), head = emb ? "" : `${backBar()}<h1 class="vtitle">${esc(T("Gym progress", "Gym-Fortschritt"))}</h1>`;
-    if (!gym.length) return `${head}${emptyBox(T("No workouts yet", "Noch keine Trainings"), esc(T("Start your first workout – then you'll see volume, records and the history of every exercise as charts here.", "Starte dein erstes Training – danach siehst du hier Volumen, Rekorde und den Verlauf jeder Übung als Grafik.")), `<button class="btn primary" data-action="start">${esc(T("Start workout", "Training starten"))}</button><button class="btn" data-action="examples">${esc(T("Load sample data", "Beispieldaten laden"))}</button>`)}`;
+    const skills = skillsSec(D);
+    if (!gym.length) return `${head}${emptyBox(T("No workouts yet", "Noch keine Trainings"), esc(T("Start your first workout – then you'll see volume, records and the history of every exercise as charts here.", "Starte dein erstes Training – danach siehst du hier Volumen, Rekorde und den Verlauf jeder Übung als Grafik.")), `<button class="btn primary" data-action="start">${esc(T("Start workout", "Training starten"))}</button><button class="btn" data-action="examples">${esc(T("Load sample data", "Beispieldaten laden"))}</button>`)}${skills}`;
     const rg = state.pRange, m = state.pMetric, { list: bk, unit } = bucketsFor(rg);
     const fn = m === "vol" ? (s) => sessionTot(s).vol : m === "sets" ? (s) => sessionTot(s).sets : () => 1;
     const vals = bk.map((b) => sumIn(gym, b, fn));
@@ -445,6 +505,7 @@
       ${st3([T("Workouts", "Trainings"), String(inR.length)], [T("Sets", "Sätze"), nf0.format(inR.reduce((a, s) => a + sessionTot(s).sets, 0))], [T("Records", "Rekorde"), String(prN), "var(--accent)"])}
       <section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Exercises", "Übungen"))}</h2><span class="label">${esc(T("Latest best", "Bester Wert zuletzt"))}</span></div>${exHTML}
         ${exRows.length > 10 && !state.exAll ? `<button class="more" data-action="ex-all">${esc(T(`Show all ${exRows.length} exercises`, `Alle ${exRows.length} Übungen anzeigen`))}</button>` : ""}</section>
+      ${skills}
       <section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Muscle groups", "Muskelgruppen"))}</h2><span class="label">${esc(T("Sets", "Sätze"))}</span></div>${pills("g-win", win, [["week", T("This week", "Diese Woche")], ["4w", T("Avg. 4 weeks", "Ø 4 Wochen")]], T("Period", "Zeitraum"))}
         ${groups || `<p class="hint" style="padding:10px 0">${esc(win === "week" ? T("No sets this week yet.", "Diese Woche noch keine Sätze.") : T("No sets in the last 4 weeks.", "Keine Sätze in den letzten 4 Wochen."))}</p>`}
         <p class="hint" style="margin-top:10px">${esc(T("Counts hard sets without warm-ups, gym and calisthenics. The mark shows 10 sets a week – a common guideline for muscle growth is about 10–20.", "Gezählt werden harte Sätze ohne Aufwärmsätze, Gym und Calisthenics. Der Strich markiert 10 Sätze pro Woche – ein gängiger Richtwert für Muskelaufbau liegt bei etwa 10–20."))}</p></section>`;
@@ -471,13 +532,15 @@
     const span = Math.max(1, daysBetween(from, today));
     const allBest = hist.reduce((a, h) => Math.max(a, h.st[m] || 0), 0);
     const head = `${backBar()}<h1 class="vtitle">${esc(exName(x))}</h1><p class="meta">${esc(groupName(x.group))} · ${esc(kindText(x.kind))}${x.cali ? " · Calisthenics" : ""}${x.base ? "" : ` · ${esc(T("own exercise", "eigene Übung"))}`}</p>`;
-    const editBtn = `<div class="btnrow"><button class="btn" data-action="ex-edit" data-arg="${esc(x.id)}">${esc(T("Edit exercise", "Übung bearbeiten"))}</button></div>`;
+    const note = (db.settings.exNotes || {})[x.id] || "";
+    const noteCard = note ? `<button class="card notecard" data-action="ex-note" data-arg="${esc(x.id)}"><span class="label">${esc(T("Note", "Notiz"))} <span class="edit">${esc(T("change", "ändern"))} ›</span></span><span class="nt">${esc(note)}</span></button>` : "";
+    const editBtn = `<div class="btnrow"><button class="btn" data-action="ex-edit" data-arg="${esc(x.id)}">${esc(T("Edit exercise", "Übung bearbeiten"))}</button>${note ? "" : `<button class="btn" data-action="ex-note" data-arg="${esc(x.id)}">+ ${esc(T("Note", "Notiz"))}</button>`}</div>`;
     const lvPills = lvOn ? `<div class="chiprow" role="group" aria-label="${esc(T("Level", "Stufe"))}">${x.lv.map((_, k) => { const has = all.some((h) => h.lv === k); return `<button class="fchip" data-action="ex-lv" data-arg="${k}" aria-pressed="${k === lv}">${has ? `<i style="background:${GROUP_COLORS[x.group]}"></i>` : ""}${k + 1}. ${esc(lvName(x, k))}</button>`; }).join("")}</div>` : "";
     const ladderCard = lvOn ? `<section class="card"><span class="label">${esc(T("Progression", "Progression"))}</span><div class="prlist">${x.lv.map((_, k) => {
       const hk = all.filter((h) => h.lv === k), b = hk.reduce((a, h) => (!a || h.st[ms[0]] > a.st[ms[0]] ? h : a), null);
       return `<div><span>${k + 1}. ${esc(lvName(x, k))}</span><b>${b ? `${esc(METRIC[ms[0]].fmt(b.st[ms[0]]))}<small>${esc(dateFmt.format(isoDate(b.s.date)))}</small>` : `<span class="hint">–</span>`}</b></div>`;
     }).join("")}</div></section>` : "";
-    if (!all.length) return `${head}${lvOn ? ladderCard : ""}${emptyBox(T("No data yet", "Noch keine Daten"), esc(T("As soon as you log this exercise in a workout, your progress shows up here as a chart.", "Sobald du diese Übung in einem Training einträgst, siehst du hier deinen Fortschritt als Grafik.")))}${editBtn}`;
+    if (!all.length) return `${head}${noteCard}${lvOn ? ladderCard : ""}${emptyBox(T("No data yet", "Noch keine Daten"), esc(T("As soon as you log this exercise in a workout, your progress shows up here as a chart.", "Sobald du diese Übung in einem Training einträgst, siehst du hier deinen Fortschritt als Grafik.")))}${editBtn}`;
     const ctl = `<div class="ctlrow">${ms.length > 1 ? pills("ex-metric", m, ms.map((k) => [k, metricLabel(k, x.kind)]), T("Metric", "Kennzahl")) : `<span class="label">${esc(metricLong(m, x.kind))}</span>`}${rangePills("ex-range", rg, ["3m", "6m", "1y", "all"])}</div>`;
     let chart;
     if (!H.length) chart = `<div class="chart-empty">${esc(lvOn ? T("No sessions at this level in this period.", "Keine Einheit auf dieser Stufe im Zeitraum.") : T("No workout in this period.", "Kein Training in diesem Zeitraum."))}</div>`;
@@ -510,6 +573,7 @@
     const rows = hist.slice().reverse().slice(0, 30).map((h) => `<button class="row" data-action="session" data-arg="${esc(h.s.id)}">${badgeSport(h.s.sport)}<span class="main"><span class="t1">${esc(setsSummary(h.e, x.kind))}${(h.pr || []).length ? `<span class="tag attn">PR</span>` : ""}</span><span class="t2">${esc(dayTxt(h.s.date))} · ${esc(h.s.name || T("Workout", "Training"))}</span></span><span class="val">${esc(METRIC[ms[0]].fmt(h.st[ms[0]]))}</span><span class="chev" aria-hidden="true">›</span></button>`).join("");
     return `
       ${head}
+      ${noteCard}
       ${lvPills}
       ${ctl}
       ${chart}
@@ -547,6 +611,21 @@
   }
 
   /* ---------- Calisthenics ---------- */
+  /* one skill: level ladder + current level (or sessions) and the best value at that level */
+  function skillRow(x, D) {
+    const hist = D.byEx.get(x.id) || [], top = hasLv(x) ? topLevel(x.id) : null;
+    const H = hasLv(x) ? hist.filter((h) => h.lv === top) : hist, mm = metricsFor(x.kind)[0];
+    const best = H.reduce((a, h) => Math.max(a, h.st[mm] || 0), 0);
+    const sub = hasLv(x) ? (top >= 0 ? `${ladder(x, top)} ${esc(lvName(x, top))}` : `${ladder(x, -1)} ${esc(T("not started", "noch nicht begonnen"))}`) : hist.length ? `${pl(hist.length, "session")} · ${esc(rel(hist[hist.length - 1].s.date))}` : esc(T("not started", "noch nicht begonnen"));
+    return `<button class="row" data-action="ex" data-arg="${esc(x.id)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${sub}</span></span><span class="val">${best ? esc(METRIC[mm].fmt(best)) : ""}</span><span class="chev" aria-hidden="true">›</span></button>`;
+  }
+  /* skills that already have entries, most recent first – for Progress → Strength */
+  function skillsSec(D) {
+    const xs = [...EX.values()].filter((x) => (x.cali === "static" || x.cali === "dynamic") && !x.hidden && (D.byEx.get(x.id) || []).length)
+      .map((x) => ({ x, last: D.byEx.get(x.id).slice(-1)[0].s.date })).sort((a, b) => b.last.localeCompare(a.last));
+    if (!xs.length) return "";
+    return `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Skills", "Skills"))}</h2><span class="label">${esc(T("Level · best", "Stufe · Bestwert"))}</span></div>${xs.map(({ x }) => skillRow(x, D)).join("")}</section>`;
+  }
   function viewCali() {
     const D = derived(), cali = D.desc.filter((s) => s.sport === "cali"), d30 = addDays(todayISO(), -30);
     const in30 = cali.filter((s) => s.date >= d30);
@@ -559,13 +638,7 @@
     }, `<span><i style="border-color:${SPORTS.cali.color};border-top-width:6px"></i>${esc(T("Sessions per week", "Einheiten pro Woche"))}</span>`) : "";
     const sec = (ct) => {
       const xs = [...EX.values()].filter((x) => x.cali === ct && !x.hidden);
-      const rows = xs.map((x) => {
-        const hist = D.byEx.get(x.id) || [], top = hasLv(x) ? topLevel(x.id) : null;
-        const H = hasLv(x) ? hist.filter((h) => h.lv === top) : hist, mm = metricsFor(x.kind)[0];
-        const best = H.reduce((a, h) => Math.max(a, h.st[mm] || 0), 0);
-        const sub = hasLv(x) ? (top >= 0 ? `${ladder(x, top)} ${esc(lvName(x, top))}` : `${ladder(x, -1)} ${esc(T("not started", "noch nicht begonnen"))}`) : hist.length ? `${pl(hist.length, "session")} · ${esc(rel(hist[hist.length - 1].s.date))}` : esc(T("not started", "noch nicht begonnen"));
-        return `<button class="row" data-action="ex" data-arg="${esc(x.id)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${sub}</span></span><span class="val">${best ? esc(METRIC[mm].fmt(best)) : ""}</span><span class="chev" aria-hidden="true">›</span></button>`;
-      }).join("");
+      const rows = xs.map((x) => skillRow(x, D)).join("");
       const [, en, de] = CTYPES.find((c) => c[0] === ct);
       return `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T(en, de))}</h2><span class="label">${esc(ct === "static" ? T("Best hold", "Beste Haltezeit") : T("Best set", "Bester Satz"))}</span></div>${rows}</section>`;
     };
@@ -577,7 +650,7 @@
       ${chart}
       ${st3([T("30 days", "30 Tage"), pl(in30.length, "session")], [T("Levels reached", "Stufen erreicht"), String(lvls)], [T("Records", "Rekorde"), String(pr30), "var(--accent)"])}
       ${sec("static")}${sec("dynamic")}${sec("basic")}
-      <p class="hint">${esc(T("Own calisthenics exercises: Settings → Exercises → + Exercise, tick “Calisthenics”.", "Eigene Calisthenics-Übungen: Einstellungen → Übungen → + Übung, „Calisthenics\" anhaken."))}</p>`;
+      <p class="hint">${esc(T("Own calisthenics exercises: Training → Exercises → + Exercise, tick “Calisthenics”.", "Eigene Calisthenics-Übungen: Training → Übungen → + Übung, „Calisthenics\" anhaken."))}</p>`;
   }
 
   /* ---------- Workouts (templates) ---------- */
@@ -709,8 +782,9 @@
         <span class="label">${esc(T("Rest timer", "Pausen-Timer"))}</span>
         <label class="field"><span class="hint">${esc(T("Default after each set – each exercise can have its own (tap ⏱ on the exercise)", "Standard nach jedem Satz – jede Übung kann eine eigene haben (⏱ an der Übung antippen)"))}</span><select class="psel" id="restSel">${restOpts.map(([k, t]) => `<option value="${k}"${+db.settings.rest === k ? " selected" : ""}>${esc(t)}${k ? " min" : ""}</option>`).join("")}</select></label>
         <label class="check"><input type="checkbox" id="soundChk"${db.settings.sound ? " checked" : ""}><span>${esc(T("Sound when the rest is over", "Ton am Ende der Pause"))}<br><span class="hint">${esc(T("On iPhone only audible with the silent switch off and PFT open.", "Auf dem iPhone nur hörbar, wenn der Stummschalter aus ist und PFT offen ist."))}</span></span></label>
+        <label class="check"><input type="checkbox" id="rirChk"${db.settings.rir ? " checked" : ""}><span>${esc(T("Log RIR (reps in reserve)", "RIR erfassen (Wiederholungen in Reserve)"))}<br><span class="hint">${esc(T("A small 0–4 field per set: how many more reps you could have done. Off by default.", "Ein kleines Feld 0–4 pro Satz: wie viele Wiederholungen noch gegangen wären. Standardmäßig aus."))}</span></span></label>
       </section>
-      <section class="card">
+      <section class="card" id="goalsCard">
         <span class="label">${esc(T("Daily nutrition goals (optional)", "Tagesziele Ernährung (optional)"))}</span>
         <label class="field"><span class="hint">kcal</span><input id="goalKcal" inputmode="numeric" autocomplete="off" placeholder="${esc(T("e.g. 2600", "z. B. 2600"))}" value="${g.kcal || ""}"></label>
         <span class="hint">${esc(T("Protein", "Eiweiß"))}</span>
@@ -784,6 +858,15 @@
   }
 
   /* ---------- Heute ---------- */
+  /* at most one notice on Heute, by priority: running workout (shown in the main button, so nothing else) > new report >
+     backup due (> 14 days) > records of the week */
+  function hubNotice(live, nr, bk, prs7) {
+    if (live) return "";
+    if (nr.length) return `<button class="notice live report" data-action="rep-new"><span><span class="dot" aria-hidden="true"></span>${esc(nr.length === 1 ? T("New report", "Neuer Bericht") : T("New reports", "Neue Berichte"))}: <b>${esc(`${repKindName(nr[nr.length - 1].type)} ${periodName(nr[nr.length - 1])}`)}</b>${nr.length > 1 ? ` ${esc(T(`+ ${nr.length - 1} more`, `+ ${nr.length - 1} weitere`))}` : ""}</span><span>${esc(T("Open", "Ansehen"))} ›</span></button>`;
+    if (db.sessions.length >= 5 && (bk == null || bk > 14)) return `<button class="notice" data-action="export-json">${esc(T("Last backup", "Letztes Backup"))}: ${esc(lastBackupText())} · ${esc(T("Save one now", "Jetzt sichern"))} ›</button>`;
+    if (prs7.length) return `<button class="notice prnote" data-action="nav" data-arg="progress"><span>🏆 ${esc(T(`${prs7.length} new records this week`, `${prs7.length} neue Rekorde in den letzten 7 Tagen`))} – ${esc(exName(exOf(prs7[0].ex)))}${prs7.length > 1 ? " …" : ""}</span><span>›</span></button>`;
+    return "";
+  }
   function viewHub() {
     const D = derived(), today = todayISO(), ws = weekStart(today), we = addDays(ws, 6);
     const week = D.desc.filter((s) => s.date >= ws && s.date <= we);
@@ -803,13 +886,12 @@
         <div class="brand"><h1 class="wordmark">P<b>F</b>T</h1><span class="label">Personal Fitness Tracker</span></div>
         <div class="hubright"><span class="sync" data-mode="${STANDALONE ? "device" : "local"}">${STANDALONE ? esc(T(`On this ${deviceName}`, `Auf diesem ${deviceName}`)) : esc(T("Browser only", "Nur im Browser"))}</span></div>
       </header>
-      ${live ? `<button class="notice live" data-action="resume"><span><span class="dot" aria-hidden="true"></span>${esc(T("Workout running", "Training läuft"))} · ${esc(draft.name || (draft.sport === "cali" ? "Calisthenics" : T("Free workout", "Freies Training")))} · <span data-clock>${clock((Date.now() - draft.start) / 1000)}</span></span><span>${esc(T("Resume", "Weiter"))} ›</span></button>` : ""}
       <div class="mainbtns">
-        <button class="addbig" data-action="start"><span aria-hidden="true">${live ? "▶" : "+"}</span>${esc(live ? T("Workout", "Training") : T("Workout", "Training"))}</button>
+        ${live ? `<button class="addbig resume" data-action="resume" aria-label="${esc(T("Resume workout", "Training fortsetzen"))}"><span aria-hidden="true">▶</span><span class="rs"><span>${esc(T("Resume", "Weiter"))} · <span data-clock>${clock((Date.now() - draft.start) / 1000)}</span></span><small>${esc(draft.name || (draft.sport === "cali" ? "Calisthenics" : T("Free workout", "Freies Training")))}</small></span></button>`
+          : `<button class="addbig" data-action="start"><span aria-hidden="true">+</span>${esc(T("Workout", "Training"))}</button>`}
         <button class="addbig alt" data-action="meal-quick"><span aria-hidden="true">+</span>${esc(T("Meal", "Mahlzeit"))}</button>
       </div>
-      ${db.sessions.length >= 5 && (bk == null || bk > 14) ? `<button class="notice" data-action="export-json">${esc(T("Last backup", "Letztes Backup"))}: ${esc(lastBackupText())} · ${esc(T("Save one now", "Jetzt sichern"))} ›</button>` : ""}
-      ${nr.length ? `<button class="notice live report" data-action="rep-new"><span><span class="dot" aria-hidden="true"></span>${esc(nr.length === 1 ? T("New report", "Neuer Bericht") : T("New reports", "Neue Berichte"))}: <b>${esc(`${repKindName(nr[nr.length - 1].type)} ${periodName(nr[nr.length - 1])}`)}</b>${nr.length > 1 ? ` ${esc(T(`+ ${nr.length - 1} more`, `+ ${nr.length - 1} weitere`))}` : ""}</span><span>${esc(T("Open", "Ansehen"))} ›</span></button>` : ""}
+      ${hubNotice(live, nr, bk, prs7)}
       ${nt ? `<div class="nextrow"><span class="main"><span class="label">${esc(T("Up next", "Als Nächstes"))}</span><b>${esc(nt.name || T("Untitled", "Ohne Namen"))}</b><span class="t2">${esc(nt.items.slice(0, 4).map((it) => exName(exOf(it.ex))).join(", "))}${nt.items.length > 4 ? " …" : ""}</span></span><button class="btn primary" data-action="start-tpl" data-arg="${esc(nt.id)}">▶ ${esc(T("Start", "Starten"))}</button></div>` : ""}
       <section class="todaycard">
         <button class="tc-food" data-action="nav" data-arg="food">
@@ -822,7 +904,6 @@
           ${wt ? `<b>${esc(nf1.format(wt.kg))} <small>kg</small></b><span class="tc-sub">Ø 7 ${esc(T("days", "Tage"))} ${esc(kg1(cw))}</span>` : `<b class="tc-add">+</b><span class="tc-sub">${esc(cw ? T(`Log today · last ${nf1.format(lastWeight().kg)} kg`, `Heute eintragen · zuletzt ${nf1.format(lastWeight().kg)} kg`) : T("Log today", "Heute eintragen"))}</span>`}
         </button>
       </section>
-      ${prs7.length ? `<button class="notice prnote" data-action="nav" data-arg="progress"><span>🏆 ${esc(T(`${prs7.length} new records this week`, `${prs7.length} neue Rekorde in den letzten 7 Tagen`))} – ${esc(exName(exOf(prs7[0].ex)))}${prs7.length > 1 ? " …" : ""}</span><span>›</span></button>` : ""}
       ${lastS ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Last workout", "Zuletzt"))}</h2><button class="more" data-action="nav" data-arg="history">${esc(T("History", "Verlauf"))} ›</button></div>${sessionRow(lastS)}</section>` : ""}
       <section class="accounts" aria-label="${esc(T("This week", "Diese Woche"))}">
         <span class="label">${esc(T("This week", "Diese Woche"))} · ${esc(wkLabel(today))}</span>
@@ -893,13 +974,13 @@
   const tplsSorted = () => db.mealTpls.slice().sort((a, b) => (b.last || "").localeCompare(a.last || "") || (b.used || 0) - (a.used || 0) || a.name.localeCompare(b.name));
   const pctKcal = (g, k, kcal) => (kcal > 0 ? Math.round((g * k / kcal) * 100) : 0);
   function macroBoxes(t, goals) {
-    const box = (lab, g, color, goal, factor) => `<div class="mbox"><span class="label">${esc(lab)}</span><b>${nf0.format(g)} g</b><small>${pctKcal(g, factor, t.kcal)} % kcal${goal ? ` · ${esc(T("goal", "Ziel"))} ${goal} g` : ""}</small>${goal ? `<div class="bar"><span style="width:${Math.min(100, (g / goal) * 100).toFixed(1)}%;background:${color}"></span></div>` : `<div class="mbar"><span style="width:${Math.min(100, pctKcal(g, factor, t.kcal))}%;background:${color}"></span></div>`}</div>`;
+    const box = (lab, g, color, goal, factor) => `<div class="mbox"><span class="label">${esc(lab)}</span><b>${nf0.format(g)} g</b><small>${pctKcal(g, factor, t.kcal)} % kcal</small>${goal ? `<small>${esc(T("goal", "Ziel"))} ${goal} g</small>` : ""}${goal ? `<div class="bar"><span style="width:${Math.min(100, (g / goal) * 100).toFixed(1)}%;background:${color}"></span></div>` : `<div class="mbar"><span style="width:${Math.min(100, pctKcal(g, factor, t.kcal))}%;background:${color}"></span></div>`}</div>`;
     return `<div class="macros">${box(T("Protein", "Eiweiß"), t.p, "#3FA9FF", goals.p, 4)}${box(T("Fat", "Fett"), t.f, "#FFB4A2", 0, 9)}${box(T("Carbs", "Kohlenhydrate"), t.c, "#F5C04A", 0, 4)}</div>`;
   }
   /* one "My meal" line: tap the name to open it, the button logs it in one tap */
   function tplRowHTML(t, mainAction, d) {
     const s = sumMacros(t.items);
-    return `<div class="againrow"><button class="main linkish" data-action="${mainAction}" data-arg="${esc(t.id)}"><span class="t1">${esc(t.name || T("Untitled", "Ohne Namen"))}</span><span class="t2">${nf0.format(s.kcal)} kcal · ${esc(macroLine(s))} g · ${esc(pl(t.items.length, "item"))}</span></button><button class="btn sm" data-action="mt-add" data-arg="${esc(t.id)}">+ ${esc(dayLabel(d))}</button></div>`;
+    return `<div class="againrow"><button class="main linkish" data-action="${mainAction}" data-arg="${esc(t.id)}"><span class="t1"><span class="star" aria-label="${esc(T("My meal", "Meine Mahlzeit"))}">★</span> ${esc(t.name || T("Untitled", "Ohne Namen"))}</span><span class="t2">${nf0.format(s.kcal)} kcal · ${esc(macroLine(s))} g · ${esc(pl(t.items.length, "item"))}</span></button><button class="btn sm" data-action="mt-add" data-arg="${esc(t.id)}">+ ${esc(dayLabel(d))}</button></div>`;
   }
   function viewFood() {
     const d = foodDay(), meals = dayMeals(d), t = mealsTot(meals), g = goalsNow();
@@ -919,18 +1000,18 @@
       const s = sumMacros(x.items);
       return `<button class="row" data-action="meal" data-arg="${esc(x.id)}">${mealBadge(x.type)}<span class="main"><span class="t1">${esc(x.name || mealSummary(x))}${x.example ? `<span class="tag">${esc(T("Sample", "Beispiel"))}</span>` : ""}</span><span class="t2">${esc(mealTypeName(x.type))}${x.time ? ` · ${esc(x.time)}` : ""} · ${esc(macroLine(s))} g</span></span><span class="val">${nf0.format(s.kcal)}<small>kcal</small></span><span class="chev" aria-hidden="true">›</span></button>`;
     }).join("");
-    // My meals: saved combinations, one tap to log
+    // Quick add: up to 5 of My meals, then up to 3 recent meals that aren't a My meal – one tap each
     const tpls = tplsSorted(), tplRows = tpls.slice(0, 5).map((x) => tplRowHTML(x, "mt-use", d)).join("");
-    const myMeals = `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("My meals", "Meine Mahlzeiten"))}</h2><span class="label">${esc(tpls.length ? T("One tap to add", "Ein Tipp zum Eintragen") : T("Saved meals", "Gespeicherte Mahlzeiten"))}</span></div>
-      ${tplRows || `<p class="hint" style="padding:4px 0 8px">${esc(T("Save meals you eat often – e.g. your porridge – and add them on any day with one tap. In the meal editor: “★ Save as My meal”.", "Speichere Mahlzeiten, die du oft isst – z. B. dein Porridge – und trage sie an jedem Tag mit einem Tipp ein. Im Mahlzeit-Editor: „★ Als meine Mahlzeit speichern“."))}</p>`}
-      ${navRow("nav", "mymeals", esc(tpls.length > 5 ? T(`All my meals (${tpls.length})`, `Alle meine Mahlzeiten (${tpls.length})`) : tpls.length ? T("Manage my meals", "Meine Mahlzeiten verwalten") : T("Create a My meal", "Meine Mahlzeit anlegen")), esc(T("Create, change amounts, delete", "Anlegen, Mengen ändern, löschen")))}</section>`;
-    // recent distinct meals (not already a My meal) to log again with one tap
     const seen = new Set(), recent = [];
     for (const x of db.meals.slice().sort((a, b) => (b.date + (b.time || "")).localeCompare(a.date + (a.time || "")))) {
       if (x.tpl && tplById2(x.tpl)) continue;
-      const k = mealSig(x); if (!k || seen.has(k)) continue; seen.add(k); recent.push(x); if (recent.length >= 5) break;
+      const k = mealSig(x); if (!k || seen.has(k)) continue; seen.add(k); recent.push(x); if (recent.length >= 3) break;
     }
-    const again = recent.map((x) => `<div class="againrow"><span class="main"><span class="t1">${esc(x.name || mealSummary(x))}</span><span class="t2">${nf0.format(sumMacros(x.items).kcal)} kcal · ${esc(macroLine(sumMacros(x.items)))} g</span></span><button class="btn sm" data-action="meal-again" data-arg="${esc(x.id)}">+ ${esc(dayLabel(d))}</button></div>`).join("");
+    const again = recent.map((x) => `<div class="againrow"><span class="main"><span class="t1">${esc(x.name || mealSummary(x))}</span><span class="t2">${esc(T("recent", "zuletzt"))} ${esc(rel(x.date))} · ${nf0.format(sumMacros(x.items).kcal)} kcal · ${esc(macroLine(sumMacros(x.items)))} g</span></span><button class="btn sm" data-action="meal-again" data-arg="${esc(x.id)}">+ ${esc(dayLabel(d))}</button></div>`).join("");
+    const quick = `<section class="sec quick"><div class="sechead"><h2 class="sectitle">${esc(T("Quick add", "Schnell eintragen"))}</h2><span class="label">${esc(T("One tap", "Ein Tipp"))}</span></div>
+      ${tplRows}${again}
+      ${tplRows || again ? "" : `<p class="hint" style="padding:4px 0 8px">${esc(T("Meals you eat often show up here – save one in the meal editor with “★ Save as My meal”, e.g. your porridge.", "Hier erscheinen Mahlzeiten, die du oft isst – im Mahlzeit-Editor mit „★ Als meine Mahlzeit speichern“ ablegen, z. B. dein Porridge."))}</p>`}
+      <button class="linkbtn quicklink" data-action="nav" data-arg="mymeals">${esc(tpls.length ? T(`Manage my meals${tpls.length > 5 ? ` (${tpls.length})` : ""}`, `Meine Mahlzeiten verwalten${tpls.length > 5 ? ` (${tpls.length})` : ""}`) : T("Create a My meal", "Meine Mahlzeit anlegen"))} ›</button></section>`;
     const isToday = d === todayISO();
     return `
       ${backBar()}
@@ -946,10 +1027,9 @@
       ${(() => { const ex = extrasOf(meals.flatMap((x) => x.items)); return ex.n ? `<p class="hint xline">${esc(extrasLine(ex))} <span>· ${esc(T("only foods with these values", "nur Lebensmittel mit Angaben"))}</span></p>` : ""; })()}
       <div class="addrow"><button class="addbig" data-action="meal-new"><span aria-hidden="true">+</span>${esc(T("Add meal", "Mahlzeit eintragen"))}</button><button class="addbig alt scanbig" data-action="scan-meal" aria-label="${esc(T("Scan a barcode into a new meal", "Barcode in eine neue Mahlzeit scannen"))}">${ICON_SCAN}<b>${esc(T("Scan", "Scannen"))}</b></button></div>
       <section class="sec">${rows || `<p class="hint" style="padding:6px 0">${esc(T("Nothing logged for this day yet.", "Für diesen Tag ist noch nichts eingetragen."))}</p>`}</section>
-      ${myMeals}
-      ${again ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Again?", "Nochmal?"))}</h2><span class="label">${esc(T("Recent meals", "Letzte Mahlzeiten"))}</span></div>${again}</section>` : ""}
-      ${chart ? `<div class="ctlrow">${pills("f-metric", m, [["kcal", "kcal"], ["p", T("Protein", "Eiweiß")]], T("Metric", "Kennzahl"))}${rangePills("f-range", state.fRange, ["14d", "30d"])}</div>${chart}` : ""}
-      <section class="sec">${navRow("food-new", "", esc(T("Add your own food", "Eigenes Lebensmittel anlegen")), esc(T(`Calories, protein, fat, carbs, sugar … from the pack${db.foods.length ? ` · ${db.foods.length} saved` : ""}`, `Kalorien, Eiweiß, Fett, KH, Zucker … von der Packung${db.foods.length ? ` · ${db.foods.length} gespeichert` : ""}`)))}${navRow("nav", "foods", esc(T("Foods", "Lebensmittel")), esc(T(`${FOODS.length} foods built in + search Open Food Facts`, `${FOODS.length} Lebensmittel eingebaut + Suche in Open Food Facts`)))}${navRow("nav", "settings", esc(T("Daily goals", "Tagesziele")), g.kcal || g.p ? esc(`${g.kcal ? `${nf0.format(g.kcal)} kcal` : ""}${g.kcal && g.p ? " · " : ""}${g.p ? `${g.p} g ${T("protein", "Eiweiß")}` : ""}`) : esc(T("Not set – in Settings", "Nicht gesetzt – in den Einstellungen")))}</section>
+      ${quick}
+      <section class="sec">${navRow("food-new", "", esc(T("Add your own food", "Eigenes Lebensmittel anlegen")), esc(T(`Calories, protein, fat, carbs, sugar … from the pack${db.foods.length ? ` · ${db.foods.length} saved` : ""}`, `Kalorien, Eiweiß, Fett, KH, Zucker … von der Packung${db.foods.length ? ` · ${db.foods.length} gespeichert` : ""}`)))}${navRow("nav", "foods", esc(T("Foods", "Lebensmittel")), esc(T(`${FOODS.length} foods built in + search Open Food Facts`, `${FOODS.length} Lebensmittel eingebaut + Suche in Open Food Facts`)))}${navRow("goals", "", esc(T("Daily goals", "Tagesziele")), g.kcal || g.p ? esc(`${g.kcal ? `${nf0.format(g.kcal)} kcal` : ""}${g.kcal && g.p ? " · " : ""}${g.p ? `${g.p} g ${T("protein", "Eiweiß")}` : ""}`) : esc(T("Not set – under More", "Nicht gesetzt – unter Mehr")))}</section>
+      ${chart ? `<details class="fhist" id="fHist"${state.fOpen ? " open" : ""}><summary>${esc(T("History 14/30 days", "Verlauf 14/30 Tage"))}</summary><div class="ctlrow">${pills("f-metric", m, [["kcal", "kcal"], ["p", T("Protein", "Eiweiß")]], T("Metric", "Kennzahl"))}${rangePills("f-range", state.fRange, ["14d", "30d"])}</div>${chart}</details>` : ""}
       <p class="hint">${esc(T("Values are typical averages per 100 g. For exact numbers, add the product from its pack or from Open Food Facts under Foods.", "Die Werte sind typische Durchschnittswerte pro 100 g. Für exakte Zahlen das Produkt von der Packung oder aus Open Food Facts unter Lebensmittel anlegen."))}</p>`;
   }
 
@@ -1312,7 +1392,9 @@
       a.kcal += t.kcal; a.p += t.p; a.f += t.f; a.c += t.c; md.set(m.date, a);
     }
     const fd = md.size, g = goalsNow(), vals = [...md.values()], avg = (k) => (fd ? vals.reduce((s, x) => s + x[k], 0) / fd : 0);
-    r.food = { days: fd, kcal: avg("kcal"), p: avg("p"), f: avg("f"), c: avg("c"), pGoal: g.p ? vals.filter((x) => x.p >= g.p).length : 0, kGoal: g.kcal ? vals.filter((x) => Math.abs(x.kcal - g.kcal) <= g.kcal * 0.1).length : 0 };
+    let pGoal = 0, pHas = false;
+    for (const [day, x] of md) { const pg = proteinGoalOn(day); if (pg) { pHas = true; if (x.p >= pg) pGoal++; } } // each day against its own goal
+    r.food = { days: fd, kcal: avg("kcal"), p: avg("p"), f: avg("f"), c: avg("c"), pGoal, pHas, kGoal: g.kcal ? vals.filter((x) => Math.abs(x.kcal - g.kcal) <= g.kcal * 0.1).length : 0 };
     // body weight: average of the entries; change = last week vs. first week of entries (single days jump around too much)
     const ws = db.weights.filter((w) => w.date >= from && w.date <= to), wav = (l) => l.reduce((x, w) => x + w.kg, 0) / l.length;
     r.body = { n: ws.length, avg: ws.length ? wav(ws) : 0, ch: null };
@@ -1496,8 +1578,7 @@
       if (wk >= 3) out.push(T(`Trained in <b>${a.weekN} of ${wk} weeks</b>.`, `In <b>${a.weekN} von ${wk} Wochen</b> trainiert.`));
     } else if (a.has) out.push(T("No training logged in this period.", "In diesem Zeitraum kein Training eingetragen."));
     if (a.food.days) {
-      const g = goalsNow();
-      out.push(T(`Nutrition logged on ${pl(a.food.days, "day")} – Ø ${n0(a.food.kcal)} kcal and ${n0(a.food.p)} g protein${g.p ? `, protein goal on ${a.food.pGoal} days` : ""}.`, `Ernährung an ${onDays(a.food.days)} erfasst – Ø ${n0(a.food.kcal)} kcal und ${n0(a.food.p)} g Eiweiß${g.p ? `, Eiweißziel an ${a.food.pGoal} Tagen` : ""}.`));
+      out.push(T(`Nutrition logged on ${pl(a.food.days, "day")} – Ø ${n0(a.food.kcal)} kcal and ${n0(a.food.p)} g protein${a.food.pHas ? `, protein goal on ${a.food.pGoal} days` : ""}.`, `Ernährung an ${onDays(a.food.days)} erfasst – Ø ${n0(a.food.kcal)} kcal und ${n0(a.food.p)} g Eiweiß${a.food.pHas ? `, Eiweißziel an ${a.food.pGoal} Tagen` : ""}.`));
     }
     if (a.body.n) {
       const c = a.body.ch, cTxt = c == null ? "" : Math.abs(c) < 0.15 ? T(" – about the same from start to end", " – von Anfang bis Ende etwa gleich") : T(` – ${c > 0 ? "+" : "−"}${nf1.format(Math.abs(c))} kg from the first to the last week`, ` – ${c > 0 ? "+" : "−"}${nf1.format(Math.abs(c))} kg von der ersten bis zur letzten Woche`);
@@ -1629,17 +1710,23 @@
     return n ? s / n : null;
   }
   /* current weight: 7-day average if there are entries in the last 7 days, otherwise the last entry */
-  function curWeight() {
+  /* body weight on a day: Ø of the 7 days up to it, else the last entry before it, else the first entry */
+  function weightAt(date) {
     const L = db.weights; if (!L.length) return null;
-    return wAvgAt(todayISO(), 7) || L[L.length - 1].kg;
+    const a = wAvgAt(date, 7); if (a) return a;
+    let last = null; for (const w of L) { if (w.date > date) break; last = w; }
+    return (last || L[0]).kg;
   }
+  const curWeight = () => weightAt(todayISO());
   const lastWeight = () => (db.weights.length ? db.weights[db.weights.length - 1] : null);
   const weightOn = (d) => db.weights.find((w) => w.date === d) || null;
-  function proteinGoal() {
-    const g = db.settings.goals, w = curWeight();
+  /* protein goal of a day – from that day's weight when it is set per kg, so old reports keep their own goal */
+  function proteinGoalOn(date) {
+    const g = db.settings.goals, w = g.pMode === "auto" ? weightAt(date) : null;
     if (g.pMode === "auto" && w) return Math.round((+g.pPerKg || 1.8) * w);
     return +g.p || 0;
   }
+  const proteinGoal = () => proteinGoalOn(todayISO());
   const goalsNow = () => ({ kcal: +db.settings.goals.kcal || 0, p: proteinGoal() });
   function saveWeight(date, kgv) {
     const v = Math.round(kgv * 10) / 10;
@@ -1712,11 +1799,11 @@
     const estCard = est ? `<section class="card"><span class="label">${esc(T("Your calories in context", "Deine Kalorien im Bezug"))}</span><p style="color:var(--ink)">${T(`Last 4 weeks: Ø <b>${nf0.format(est.kcal)} kcal</b> a day eaten, weight <b>${sign(est.perWeek)}${nf1.format(Math.abs(est.perWeek))} kg</b> per week. Estimated maintenance: <b>~${nf0.format(Math.round(est.tdee / 50) * 50)} kcal</b> a day.`, `Letzte 4 Wochen: Ø <b>${nf0.format(est.kcal)} kcal</b> pro Tag gegessen, Gewicht <b>${sign(est.perWeek)}${nf1.format(Math.abs(est.perWeek))} kg</b> pro Woche. Geschätzter Erhaltungsbedarf: <b>~${nf0.format(Math.round(est.tdee / 50) * 50)} kcal</b> pro Tag.`)}</p><p>${esc(T("A rough estimate from what you logged (7,700 kcal ≈ 1 kg). The more days with meals and weight, the better it gets.", "Grobe Schätzung aus deinen Einträgen (7.700 kcal ≈ 1 kg). Je mehr Tage mit Essen und Gewicht, desto genauer."))}</p></section>`
       : `<section class="card"><span class="label">${esc(T("Your calories in context", "Deine Kalorien im Bezug"))}</span><p>${esc(T("Log your weight a few times a week and your meals on at least 14 of 28 days – then PFT estimates how many calories you need to keep your weight.", "Trag dein Gewicht ein paar Mal pro Woche und deine Mahlzeiten an mindestens 14 von 28 Tagen ein – dann schätzt PFT, wie viele Kalorien du brauchst, um dein Gewicht zu halten."))}</p></section>`;
     const auto = g.pMode === "auto", f = +g.pPerKg || 1.8;
-    const protCard = `<section class="card"><span class="label">${esc(T("Protein goal", "Eiweißziel"))}</span>
-      <div class="seg" role="group" aria-label="${esc(T("Protein goal", "Eiweißziel"))}"><button data-action="p-mode" data-arg="auto" aria-pressed="${auto}">${esc(T("From body weight", "Aus Körpergewicht"))}</button><button data-action="p-mode" data-arg="fixed" aria-pressed="${!auto}">${esc(T("Fixed", "Fester Wert"))}</button></div>
-      ${auto ? `<div class="pills" role="group" aria-label="${esc(T("Grams per kg", "Gramm pro kg"))}">${[1.6, 1.8, 2, 2.2].map((x) => `<button data-action="p-perkg" data-arg="${x}" aria-pressed="${Math.abs(x - f) < 0.01}">${nf1.format(x)} g/kg</button>`).join("")}</div>
-        <p style="color:var(--ink)">${T(`Goal: <b>${proteinGoal()} g protein</b> a day (${nf1.format(f)} g × ${nf1.format(cw)} kg).`, `Ziel: <b>${proteinGoal()} g Eiweiß</b> pro Tag (${nf1.format(f)} g × ${nf1.format(cw)} kg).`)}</p><p>${esc(T("1.6–2.2 g per kg is a common range for building muscle. The goal follows your weight automatically.", "1,6–2,2 g pro kg ist ein gängiger Bereich für Muskelaufbau. Das Ziel passt sich deinem Gewicht automatisch an."))}</p>`
-        : `<p>${esc(g.p ? T(`Fixed at ${g.p} g – change it under More.`, `Fest auf ${g.p} g – ändern unter „Mehr“.`) : T("No protein goal set. Choose “From body weight” to get one.", "Kein Eiweißziel gesetzt. Wähle „Aus Körpergewicht“, um eins zu bekommen."))}</p>`}</section>`;
+    // the goal itself is set in one place only (More → Daily goals); here just the result
+    const pg = proteinGoal();
+    const protCard = `<section class="card protcard"><div class="pc-head"><span class="label">${esc(T("Protein goal", "Eiweißziel"))}</span><button class="linkbtn" data-action="goals">${esc(T("change", "ändern"))} ›</button></div>
+      <p class="pc-val">${pg ? `<b>${pg} g</b> ${esc(T("a day", "pro Tag"))}` : esc(T("Not set", "Nicht gesetzt"))}${auto && pg ? ` <small>(${esc(nf1.format(f))} g × ${esc(kg1(cw))})</small>` : !auto && pg ? ` <small>(${esc(T("fixed value", "fester Wert"))})</small>` : ""}</p>
+      ${!pg || !auto ? `<p class="hint">${esc(T("Under More → Daily goals it can follow your body weight (e.g. 1.8 g per kg).", "Unter Mehr → Tagesziele kann es sich nach deinem Körpergewicht richten (z. B. 1,8 g pro kg)."))}</p>` : ""}</section>`;
     const list = L.slice().reverse().slice(0, state.wAll ? 400 : 8).map((w) => `<button class="row nobadge" data-action="w-edit" data-arg="${w.date}"><span class="main"><span class="t1">${esc(kg1(w.kg))}</span><span class="t2">${esc(dayTxt(w.date))}</span></span><span class="val"></span><span class="chev" aria-hidden="true">›</span></button>`).join("");
     return `
       ${head}

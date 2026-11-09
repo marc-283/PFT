@@ -1,4 +1,4 @@
-/* PFT 1.4.1 – styles */
+/* PFT 1.5.0 – styles */
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/barlow-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/barlow-latin-500-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/barlow-latin-600-normal.woff2") format("woff2"); }
@@ -694,3 +694,71 @@ body.scanning .tabbar, body.scanning .fab { visibility: hidden; }
 .check.sportrow { align-items: center; min-height: 52px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 600; }
 .check.sportrow > span { display: flex; align-items: center; gap: 12px; }
 .check.sportrow input { margin: 0; width: 22px; height: 22px; }
+
+/* ---------- v1.5 ---------- */
+.addbig.resume { gap: 10px; }
+.addbig.resume .rs { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.1; }
+.addbig.resume .rs > span { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.addbig.resume small { font: 600 12.5px/1.2 "Barlow", sans-serif; letter-spacing: 0; text-transform: none; opacity: 0.75; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todaygoal small { color: var(--muted); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.exnote { display: block; width: 100%; text-align: left; margin: -6px 0 0; padding: 0; border: 0; background: none; color: var(--muted); font: 500 13.5px/1.35 "Barlow", sans-serif; overflow-wrap: anywhere; }
+.exnote::before { content: "✎ "; color: var(--muted); }
+.quick .star { color: var(--accent); }
+.quicklink { margin-top: 10px; }
+.fhist { margin-top: 4px; border-top: 1px solid var(--line); }
+.fhist > summary { list-style: none; cursor: pointer; padding: 14px 0; font: 700 15px/1.2 "Barlow Condensed", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
+.fhist > summary::-webkit-details-marker { display: none; }
+.fhist > summary::after { content: "›"; font-size: 22px; color: var(--muted); transition: transform 0.2s; }
+.fhist[open] > summary::after { transform: rotate(90deg); }
+/* RIR */
+.setgrid.rir { grid-template-columns: 28px minmax(0, 1fr) 62px 48px 36px 42px; gap: 6px; }
+.rirchip { height: 40px; width: 36px; padding: 0; border-radius: 10px; border: 1px dashed var(--line); background: transparent; color: var(--faint); font: 700 11px/1 "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
+.rirchip.on { border-style: solid; border-color: rgba(255, 232, 58, 0.45); color: var(--accent); font-size: 17px; }
+.setrow.done .rirchip { border-color: transparent; }
+.rirpick { display: flex; align-items: center; gap: 6px; padding: 4px 2px 8px 36px; }
+.rirpick .label { margin-right: 2px; }
+.rirpick button { flex: 1; min-width: 0; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); color: var(--ink); font-weight: 700; padding: 0; }
+.rirpick button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #000; }
+.rirtag { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-left: 4px; }
+@media (max-width: 370px) { .setgrid.rir { grid-template-columns: 26px minmax(0, 1fr) 58px 44px 34px 38px; gap: 5px; } }
+/* comparison after finishing */
+.cmpcard .kpis { display: flex; flex-direction: column; }
+.cmpcard .hint { margin: -6px 0 0; }
+/* note card in the exercise view */
+.notecard { text-align: left; color: var(--ink); font: inherit; width: 100%; }
+.notecard .label { display: flex; justify-content: space-between; }
+.notecard .edit { color: var(--accent); text-transform: none; letter-spacing: 0; font: 600 13px/1 "Barlow", sans-serif; }
+.notecard .nt { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* plate calculator */
+.plateout { display: flex; flex-direction: column; gap: 8px; min-height: 150px; }
+.barviz { display: flex; align-items: center; height: 104px; padding: 0 8px; position: relative; }
+.barviz .sleeve { position: absolute; left: 0; right: 0; top: 50%; height: 10px; margin-top: -5px; background: linear-gradient(#9A9AA3, #5C5C66); border-radius: 3px; }
+.barviz .pl { position: relative; width: 16px; height: var(--h); background: var(--c); border-radius: 4px; margin-right: 3px; box-shadow: inset -3px 0 0 rgba(0, 0, 0, 0.25); flex: none; }
+.barviz .pl:first-of-type { margin-left: 26px; }
+.barviz .collar { position: relative; width: 10px; height: 26px; background: #C9C9D1; border-radius: 3px; flex: none; }
+.pside { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.pside b { font-size: 22px; font-family: var(--f-display); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: pre-wrap; }
+/* month calendar in History */
+.cal { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 12px 10px; }
+.calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.calhead b { font-family: var(--f-display); font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase; }
+.calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.calgrid .wd { text-align: center; font-size: 11.5px; font-weight: 600; color: var(--muted); padding: 2px 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.cday { position: relative; height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); padding: 4px 0 0; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 600 15px/1 "Barlow", sans-serif; font-variant-numeric: tabular-nums; }
+.cday.has { background: var(--raised); }
+.cday.today .dn { color: var(--accent); }
+.cday.today::after { content: ""; position: absolute; inset: 0; border: 1px solid rgba(255, 232, 58, 0.5); border-radius: 10px; pointer-events: none; }
+.cday.sel { background: var(--accent); color: #000; }
+.cday.sel .dn { color: #000; }
+.cday:disabled { color: var(--faint); opacity: 0.5; }
+.cday .dots { display: flex; gap: 3px; height: 6px; }
+.cday .dots i { width: 6px; height: 6px; border-radius: 50%; }
+.cday.sel .dots i { box-shadow: 0 0 0 1.5px #000; }
+.calsub { margin: 8px 2px 0; }
+.dayfilter { align-self: flex-start; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kpirow .dl:empty { visibility: hidden; }
+.mainbtns { align-items: stretch; }
+.mainbtns .addbig.resume { padding-inline: 12px; }
+.setchk, .rirchip { width: 100%; max-width: 44px; justify-self: end; }
+.cmpcard .kpirow .k { white-space: normal; overflow: visible; }

@@ -1,4 +1,4 @@
-/* PFT 1.4.1 – Food parser and the built-in food list (values per 100 g). */
+/* PFT 1.5.0 – Food parser and the built-in food list (values per 100 g). */
 "use strict";
   /* ================= Foods =================
      Typical values per 100 g (liquids: per 100 ml), rounded averages from common German and US food tables.

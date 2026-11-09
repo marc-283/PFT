@@ -13,9 +13,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=a4de8257">
+<link rel="stylesheet" href="style.css?v=1123cef7">
 <script>
-window.PFT_VERSION = "1.4.1";
+window.PFT_VERSION = "1.5.0";
 if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 </script>
 </head>
@@ -237,6 +237,35 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListe
   </form>
 </div>
 
+<div class="sheet" id="noteSheet" role="dialog" aria-modal="true" aria-labelledby="noteTitle" hidden>
+  <form id="noteForm" novalidate>
+    <div class="grip" aria-hidden="true"></div>
+    <div class="sheethead"><h2 id="noteTitle">Note</h2><button type="button" class="mbtn" data-close data-ta="Close|Schließen">✕</button></div>
+    <p class="hint" id="noteSub"></p>
+    <div class="field"><textarea id="noteText" rows="3" maxlength="200" autocomplete="off" data-tp="e.g. Seat level 4, close grip|z. B. Sitz Stufe 4, enger Griff" data-ta="Note for this exercise|Notiz zu dieser Übung"></textarea></div>
+    <p class="hint" data-t="Shown under the exercise in every workout – for machine settings, grip, cues.|Steht in jedem Training unter der Übung – für Geräte-Einstellungen, Griff, Technik-Hinweise.">Shown under the exercise in every workout.</p>
+    <div class="btnrow"><button type="submit" class="btn primary grow1" data-t="Save|Speichern">Save</button><button type="button" class="btn danger" id="noteDel" hidden data-t="Delete|Löschen">Delete</button></div>
+  </form>
+</div>
+
+<div class="sheet" id="plateSheet" role="dialog" aria-modal="true" aria-labelledby="plateTitle" hidden>
+  <form id="plateForm" novalidate onsubmit="return false">
+    <div class="grip" aria-hidden="true"></div>
+    <div class="sheethead"><h2 id="plateTitle" data-t="Plate calculator|Scheiben berechnen">Plate calculator</h2><button type="button" class="mbtn" data-close data-ta="Close|Schließen">✕</button></div>
+    <span class="label" data-t="Target weight|Zielgewicht">Target weight</span>
+    <div class="wstep">
+      <button type="button" class="mbtn" data-pstep="-2.5" data-ta="2.5 kg less|2,5 kg weniger">−</button>
+      <label class="wbig"><input id="plateKg" inputmode="decimal" autocomplete="off" placeholder="0" data-ta="Target weight in kg|Zielgewicht in kg"><span>kg</span></label>
+      <button type="button" class="mbtn" data-pstep="2.5" data-ta="2.5 kg more|2,5 kg mehr">+</button>
+    </div>
+    <span class="label" data-t="Bar|Stange">Bar</span>
+    <div class="seg four" role="group" id="plateBar" data-ta="Bar weight|Gewicht der Stange">
+      <button type="button" data-bar="20" aria-pressed="true">20 kg</button><button type="button" data-bar="15" aria-pressed="false">15 kg</button><button type="button" data-bar="10" aria-pressed="false">10 kg</button><button type="button" data-bar="0" aria-pressed="false" data-t="None|Ohne">None</button>
+    </div>
+    <div class="plateout" id="plateOut" aria-live="polite"></div>
+  </form>
+</div>
+
 <div class="scan" id="scan" role="dialog" aria-modal="true" aria-labelledby="scanTitle" hidden>
   <div class="scan-cam">
     <video id="scanVideo" playsinline muted autoplay></video>
@@ -273,9 +302,9 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") addEventListe
   </div>
 </div>
 
-<script src="data.js?v=3ee7da90"></script>
-<script src="foods.js?v=e4966534"></script>
-<script src="views.js?v=9096a172"></script>
-<script src="app.js?v=89e14107"></script>
+<script src="data.js?v=c7fa3a26"></script>
+<script src="foods.js?v=e5e2f3c2"></script>
+<script src="views.js?v=40b90f2d"></script>
+<script src="app.js?v=b8090ce4"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* PFT 1.4.1 – Taps, sheets, gestures, timers, barcode scanner and app start. */
+/* PFT 1.5.0 – Taps, sheets, gestures, timers, barcode scanner and app start. */
 "use strict";
   const VIEWS = { hub: viewHub, train: viewTrain, prog: viewProg, body: viewBody, live: viewLive, session: viewSession, history: viewHistory, progress: viewProgress, exercise: viewExercise, workouts: viewTrain, tpl: viewTpl, sport: viewSport, settings: viewSettings, exlist: viewExlist, cali: viewCali, food: viewFood, meal: viewMeal, foods: viewFoods, mymeals: viewMyMeals, reports: viewReports, report: viewReport };
   const FAB = {
@@ -33,6 +33,12 @@
     if (top.v === "hub" && pendingStart) { pendingStart = false; openStart(); }
   }
   let resizeTimer;
+  // the nutrition chart sits in a closed <details>: remember it, and draw it at its real width once opened
+  document.addEventListener("toggle", (e) => {
+    const el = e.target; if (!el || el.id !== "fHist") return;
+    state.fOpen = el.open;
+    if (el.open) charts.forEach((c) => { const h = $(c.id); if (h && el.contains(h)) drawChart(h, { ...c.cfg, onScrub: (i) => scrubTo(c, i, $(c.id + "Val"), $(c.id + "Sub")) }); });
+  }, true);
   window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { charts.forEach((c) => drawChart($(c.id), { ...c.cfg, onScrub: (i) => scrubTo(c, i, $(c.id + "Val"), $(c.id + "Sub")) })); cmpCharts.forEach((c) => drawCmp($(c.id), c.cfg)); if (state.full) drawFull(); }, 120); });
   function setLang(l) {
     LANG = l; try { localStorage.setItem(LANG_KEY, l); } catch { /* ignore */ }
@@ -121,7 +127,7 @@
     const s = sessionById(id); if (!s) return;
     draft = {
       id: s.id, editOf: s.id, sport: s.sport, name: s.name || "", tpl: s.tpl || null, date: s.date, time: s.time || "", start: 0, dur: String(Math.round((s.dur || 0) / 60)), note: s.note || "",
-      ex: s.ex.map((e) => ({ id: e.id, tr: e.tr || "", ...(e.lv != null ? { lv: e.lv } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}), sets: e.sets.map((q) => ({ w: fmtIn(q.w), r: fmtIn(q.r), t: fmtIn(q.t), done: true, wu: !!q.wu, ...(q.drop ? { drop: true } : {}) })) }))
+      ex: s.ex.map((e) => ({ id: e.id, tr: e.tr || "", ...(e.lv != null ? { lv: e.lv } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}), sets: e.sets.map((q) => ({ w: fmtIn(q.w), r: fmtIn(q.r), t: fmtIn(q.t), done: true, wu: !!q.wu, ...(q.drop ? { drop: true } : {}), ...(q.rir != null ? { rir: q.rir } : {}) })) }))
     };
     draft.sig = draftSig(draft);
     go("live");
@@ -130,6 +136,7 @@
     if (!s.done && (kind === "time" ? s.t === "" : s.r === "" || (kind === "kg" && s.w === ""))) return null;
     const flags = { ...(s.wu ? { wu: 1 } : {}), ...(s.drop ? { drop: 1 } : {}) };
     if (kind === "time") { const t = parseNum(s.t); return t > 0 ? { t: Math.round(t), ...flags } : null; }
+    if (Number.isInteger(s.rir) && s.rir >= 0 && s.rir <= 4) flags.rir = s.rir;
     const r = parseNum(s.r); if (!(r > 0)) return null;
     const w = Math.max(0, parseNum(s.w) || 0);
     return { w: Math.round(w * 100) / 100, r: Math.round(r), ...flags };
@@ -236,6 +243,22 @@
       case "rest-ex": openRestSheet(arg); break;
       case "rest-pick": pickRest(arg); break;
       case "xm-ss": xmSuperset(); break;
+      case "xm-note": { const c = state.xm, id = c && xmId(c); if (!id) break; closeSheets(); openNote(id); break; }
+      case "ex-note": openNote(arg); break;
+      case "xm-plates": { const c = state.xm; if (!c) break; const w = plateStart(c); closeSheets(); openPlates(w); break; }
+      case "set-rir": { const [i] = ij(); state.rirOpen = state.rirOpen === arg ? null : arg; rerenderCard(i); break; }
+      case "rir-pick": {
+        const [i, j, v] = String(arg).split(":"), e = draft && draft.ex[+i], q = e && e.sets[+j]; if (!q) break;
+        if (v === "x") delete q.rir; else q.rir = +v;
+        state.rirOpen = null; saveDraft(); rerenderCard(+i); break;
+      }
+      case "cal-m": {
+        const m = state.histMonth || todayISO().slice(0, 7), d = isoDate(`${m}-01`); d.setMonth(d.getMonth() + +arg);
+        const nm = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (nm > todayISO().slice(0, 7)) break;
+        state.histMonth = nm; state.histDay = null; state.histN = 60; render(); break;
+      }
+      case "cal-day": state.histDay = state.histDay === arg ? null : arg; state.histN = 60; render(); break;
       case "set-add": { const e = draft && draft.ex[+arg]; if (!e) break; e.sets.push(blankSet()); saveDraft(); rerenderCard(+arg); break; }
       case "set-del": { const e = draft && draft.ex[+arg]; if (!e || !e.sets.length) break; e.sets.pop(); saveDraft(); rerenderCard(+arg); break; }
       case "ex-move": { const [i, dir] = ij(), L = draft.ex, k = i + dir; if (k < 0 || k >= L.length) break; [L[i], L[k]] = [L[k], L[i]]; saveDraft(); render(); break; }
@@ -296,6 +319,7 @@
       case "mt-new": newTplMeal(); break;
       case "off-search": runOff(arg); break;
       case "scan": openScan(arg); break;
+      case "goals": selectTab("more", true); requestAnimationFrame(() => { const el = $("goalsCard"); if (el) el.scrollIntoView({ block: "start" }); }); break;
       case "scan-meal": openMeal(null); openScan("meal"); break;
       case "off-pick": {
         const x = offState && offState.list[+arg]; if (!x) break;
@@ -350,6 +374,14 @@
   $("leaveDiscard").addEventListener("click", () => { closeSheets(); goBack(true); });
   /* body weight */
   document.querySelectorAll("[data-wstep]").forEach((b) => b.addEventListener("click", () => { const el = $("wKg"), v = parseNum(el.value) || (lastWeight() ? lastWeight().kg : 75); el.value = fmtIn(Math.round((v + +b.dataset.wstep) * 10) / 10); }));
+  $("noteForm").addEventListener("submit", (ev) => { ev.preventDefault(); saveNote($("noteText").value); });
+  $("noteDel").addEventListener("click", () => saveNote(""));
+  $("plateKg").addEventListener("input", drawPlates);
+  $("plateForm").addEventListener("click", (ev) => {
+    const st = ev.target.closest("[data-pstep]"), br = ev.target.closest("[data-bar]");
+    if (st) { const v = Math.max(0, (parseNum($("plateKg").value) || 0) + +st.dataset.pstep); $("plateKg").value = fmtIn(v); drawPlates(); }
+    if (br) { document.querySelectorAll("#plateBar [data-bar]").forEach((b) => b.setAttribute("aria-pressed", String(b === br))); db.settings.bar = +br.dataset.bar; persist(); drawPlates(); }
+  });
   $("wForm").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const v = parseNum($("wKg").value), d = $("wDate").value || todayISO();
@@ -435,6 +467,7 @@
     if (t.id === "openModeSel") { try { localStorage.setItem(OPEN_KEY, t.value); } catch { /* ignore */ } toast(T("Saved", "Gespeichert")); return; }
     if (t.id === "restSel") { db.settings.rest = +t.value; persist(); toast(+t.value ? `${T("Rest", "Pause")}: ${clock(+t.value)} min` : T("Rest timer off", "Pausen-Timer aus")); return; }
     if (t.id === "soundChk") { db.settings.sound = t.checked; persist(); if (t.checked) { unlockAudio(); beep(); } return; }
+    if (t.id === "rirChk") { db.settings.rir = t.checked; persist(); toast(t.checked ? T("RIR on – a small field per set", "RIR an – ein kleines Feld pro Satz") : T("RIR off", "RIR aus")); return; }
     if (t.classList.contains("sportchk")) { db.settings.hide = { ...db.settings.hide, [t.dataset.sp]: !t.checked }; persist(); toast(t.checked ? T(`${sportName(t.dataset.sp)} shown`, `${sportName(t.dataset.sp)} eingeblendet`) : T(`${sportName(t.dataset.sp)} hidden`, `${sportName(t.dataset.sp)} ausgeblendet`)); return; }
     if (t.id === "goalPkg") { const v = parseNum(t.value); if (v > 0.5 && v < 4) { db.settings.goals.pPerKg = Math.round(v * 10) / 10; persist(); render(); toast(T("Goal saved", "Ziel gespeichert")); } return; }
     if (t.id === "goalKcal" || t.id === "goalP") { const v = Math.max(0, Math.round(parseNum(t.value) || 0)); db.settings.goals[t.id === "goalKcal" ? "kcal" : "p"] = v; persist(); toast(T("Goal saved", "Ziel gespeichert")); return; }
@@ -457,7 +490,7 @@
   document.addEventListener("toggle", (ev) => { if (ev.target.id === "liveMore" && draft) { draft.moreOpen = ev.target.open; } }, true);
 
   /* ================= Sheets ================= */
-  const SHEETS = ["startSheet", "pickSheet", "exSheet", "xmSheet", "actSheet", "foodSheet", "fpickSheet", "leaveSheet", "wSheet", "restSheet"];
+  const SHEETS = ["startSheet", "pickSheet", "exSheet", "xmSheet", "actSheet", "foodSheet", "fpickSheet", "leaveSheet", "wSheet", "restSheet", "noteSheet", "plateSheet"];
   let sheetTok = 0;
   function showSheet(id) { sheetTok++; $("backdrop").hidden = false; $(id).hidden = false; $(id).scrollTop = 0; }
   function sheetOpen() { return SHEETS.map((id) => $(id)).find((el) => el && !el.hidden) || null; }
@@ -476,6 +509,63 @@
     SHEETS.forEach((id) => { const el = $(id); el.style.transform = ""; el.style.transition = ""; el.style.animation = ""; el.classList.remove("dragging"); el.hidden = true; });
     $("backdrop").style.opacity = ""; $("backdrop").style.transition = ""; $("backdrop").hidden = true;
     state.pick = null; state.xm = null; actEditing = null; exEditing = null; foodEditing = null; foodOff = null; fpick = null;
+  }
+
+  /* ---------- Note per exercise (db.settings.exNotes[id]) ---------- */
+  let noteFor = null;
+  function openNote(id) {
+    noteFor = id; const cur = (db.settings.exNotes || {})[id] || "";
+    $("noteTitle").textContent = T("Note", "Notiz");
+    $("noteSub").textContent = exName(exOf(id));
+    $("noteText").value = cur; $("noteDel").hidden = !cur;
+    showSheet("noteSheet");
+    setTimeout(() => $("noteText").focus(), 60);
+  }
+  function saveNote(text) {
+    if (!noteFor) return;
+    const v = String(text || "").trim().slice(0, 200), notes = { ...(db.settings.exNotes || {}) };
+    if (v) notes[noteFor] = v; else delete notes[noteFor];
+    db.settings.exNotes = notes; persist();
+    noteFor = null; closeSheetsAnimated(); render();
+    toast(v ? T("Note saved", "Notiz gespeichert") : T("Note removed", "Notiz gelöscht"));
+  }
+
+  /* ---------- Plate calculator: plates per side for a target weight ---------- */
+  const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const PLATE_COL = { 25: "#E5484D", 20: "#3E7BFA", 15: "#FFE83A", 10: "#30D97F", 5: "#F4F4F5", 2.5: "#71717A", 1.25: "#A1A1AA" };
+  function platesFor(target, bar) {
+    let side = (target - bar) / 2; const out = [];
+    if (!(side > 0)) return { out, rest: side < 0 ? side : 0 };
+    for (const p of PLATES) { while (side >= p - 1e-9) { out.push(p); side -= p; } }
+    return { out, rest: Math.round(side * 1000) / 1000 };
+  }
+  /* weight of the set you're on: first open set (typed or suggested), else the last one */
+  function plateStart(c) {
+    const L = xmList(c), e = L && L[c.i]; if (!e) return 0;
+    if (c.w !== "d") return 0;
+    const ph = placeholders(e, exOf(e.id), lastFor(e.id, draft, e.lv));
+    const k = e.sets.findIndex((q) => !q.done && !q.wu), j = k >= 0 ? k : e.sets.length - 1;
+    if (j < 0) return 0;
+    return parseNum(e.sets[j].w !== "" ? e.sets[j].w : (ph[j] && ph[j].w) || "") || 0;
+  }
+  function openPlates(w) {
+    const bar = [20, 15, 10, 0].includes(+db.settings.bar) ? +db.settings.bar : 20;
+    $("plateKg").value = w ? fmtIn(w) : "";
+    document.querySelectorAll("#plateBar [data-bar]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.bar === bar)));
+    drawPlates(); showSheet("plateSheet");
+  }
+  function drawPlates() {
+    const target = parseNum($("plateKg").value) || 0, btn = document.querySelector("#plateBar [aria-pressed=true]"), bar = btn ? +btn.dataset.bar : 20;
+    const out = $("plateOut");
+    if (!target) { out.innerHTML = `<p class="hint">${esc(T("Enter the weight you want on the bar.", "Gib das Gewicht ein, das auf die Stange soll."))}</p>`; return; }
+    if (target < bar) { out.innerHTML = `<p class="hint">${esc(T(`Less than the bar (${bar} kg).`, `Weniger als die Stange (${bar} kg).`))}</p>`; return; }
+    const { out: ps, rest } = platesFor(target, bar);
+    const cnt = []; for (const p of ps) { const l = cnt[cnt.length - 1]; if (l && l.p === p) l.n++; else cnt.push({ p, n: 1 }); }
+    const made = bar + 2 * ps.reduce((a, p) => a + p, 0);
+    const vis = ps.map((p) => `<i class="pl" style="--h:${Math.round(34 + (p / 25) * 58)}px;--c:${PLATE_COL[p]}" title="${nf.format(p)} kg"></i>`).join("");
+    out.innerHTML = `<div class="barviz" aria-hidden="true"><span class="sleeve"></span>${vis}<span class="collar"></span></div>
+      <p class="pside"><span class="label">${esc(T("Each side", "Pro Seite"))}</span><b>${cnt.length ? cnt.map((x) => `${x.n} × ${esc(nf.format(x.p))}`).join("  ·  ") : esc(T("no plates", "keine Scheiben"))}</b></p>
+      ${rest > 0 ? `<p class="hint">${esc(T(`${nf.format(rest)} kg per side can't be made with these plates – closest: ${nf.format(made)} kg.`, `${nf.format(rest)} kg pro Seite gehen mit diesen Scheiben nicht – am nächsten: ${nf.format(made)} kg.`))}</p>` : `<p class="hint">${esc(T(`${nf.format(bar)} kg bar + ${nf.format((made - bar) / 2)} kg per side = ${nf.format(made)} kg`, `${nf.format(bar)} kg Stange + ${nf.format((made - bar) / 2)} kg pro Seite = ${nf.format(made)} kg`))}</p>`}`;
   }
 
   /* ---------- Start chooser ---------- */
@@ -565,6 +655,8 @@
       item("xm-swap", "⇄", T("Swap exercise", "Übung tauschen"), has ? T("Picked the wrong one? Choose another – your entered sets stay.", "Falsche erwischt? Andere wählen – deine eingetragenen Sätze bleiben.") : T("Picked the wrong one? Choose another.", "Falsche erwischt? Einfach eine andere wählen."))
       + item("xm-edit", "✎", T("Edit exercise", "Übung bearbeiten"), x.base || used ? T("Name and muscle group", "Name und Muskelgruppe") : T("Name, muscle group and how it's measured", "Name, Muskelgruppe und Messart"))
       + item("xm-hist", "↗", T("History & records", "Verlauf & Rekorde"), used ? T("Chart of all your workouts", "Grafik über alle Trainings") : T("No data yet", "Noch keine Daten"))
+      + item("xm-note", "✐", T("Note", "Notiz"), (db.settings.exNotes || {})[id] || T("e.g. seat level 4, close grip", "z. B. Sitz Stufe 4, enger Griff"))
+      + (x.kind === "kg" ? item("xm-plates", "◎", T("Plate calculator", "Scheiben berechnen"), T("Which plates on each side?", "Welche Scheiben pro Seite?")) : "")
       + (c.i < L.length - 1 || (L[c.i] && L[c.i].ss) ? item("xm-ss", "⇅", L[c.i].ss ? T("Remove from superset", "Aus dem Supersatz lösen") : T("Superset with next exercise", "Supersatz mit nächster Übung"), L[c.i].ss ? T("Rest again after each set", "Wieder Pause nach jedem Satz") : T(`With ${exName(exOf(c.w === "d" ? L[c.i + 1].id : L[c.i + 1].ex))} – rest only after the second`, `Mit ${exName(exOf(c.w === "d" ? L[c.i + 1].id : L[c.i + 1].ex))} – Pause erst nach der zweiten`)) : "")
       + `<div class="two">${item("xm-move", "↑", T("Move up", "Nach oben"), "", c.i === 0 ? " half disabled" : " half", -1)}${item("xm-move", "↓", T("Move down", "Nach unten"), "", c.i === L.length - 1 ? " half disabled" : " half", 1)}</div>`
       + `<button type="button" class="menuitem danger" data-action="xm-del" data-has="${has ? 1 : 0}"><span class="mi" aria-hidden="true">✕</span><span class="main"><span class="t1">${esc(c.w === "d" ? T("Remove from workout", "Aus dem Training entfernen") : T("Remove from plan", "Aus dem Workout entfernen"))}</span>${has ? `<span class="t2">${esc(T("Entered sets are lost", "Eingetragene Sätze gehen verloren"))}</span>` : ""}</span></button>`;
@@ -1181,12 +1273,13 @@
   function exportJson() { offer(`pft-backup-${todayISO()}.json`, JSON.stringify({ app: "pft", version: 3, appVersion: VERSION, exportedAt: new Date().toISOString(), data: packDb(db) })); }
   function exportCsv() {
     const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`, num = (v) => (v == null || v === "" ? "" : String(v).replace(".", ","));
-    const lines = ["Datum;Uhrzeit;Sportart;Training;Übung;Stufe;Muskelgruppe;Satz;Satzart;Supersatz;Gewicht (kg);Wdh.;Sekunden;e1RM (kg);Dauer (min);Distanz (km);Art;Anstrengung;Notiz"];
+    const lines = ["Datum;Uhrzeit;Sportart;Training;Übung;Stufe;Muskelgruppe;Satz;Satzart;Supersatz;Gewicht (kg);Wdh.;Sekunden;RIR;e1RM (kg);Dauer (min);Distanz (km);Art;Anstrengung;Notiz;Übungsnotiz"];
+    const notes = db.settings.exNotes || {};
     for (const s of derived().asc) {
       const base = [s.date.split("-").reverse().join("."), s.time || "", SPORTS[s.sport].de];
       if (isLift(s)) {
-        for (const e of s.ex) { const x = exOf(e.id); let n = 0; e.sets.forEach((st) => { lines.push(base.concat([q(s.name), q(x.de), q(hasLv(x) ? x.lv[lvKey(x, e.lv)][1] : ""), x.group, st.wu ? "A" : st.drop ? "D" : ++n, st.wu ? "Aufwärmen" : st.drop ? "Dropsatz" : "", e.ss ? "ja" : "", num(st.w), st.r || "", st.t || "", x.kind === "kg" && !st.wu && !st.drop ? num(Math.round(e1rmOf(+st.w, +st.r) * 10) / 10) : "", Math.round(s.dur / 60), "", "", "", q(s.note)]).join(";")); }); }
-      } else lines.push(base.concat([q(s.name || ""), "", "", "", "", "", "", "", "", "", "", Math.round(s.dur / 60), num(s.dist || ""), q(s.kind || ""), s.rpe || "", q(s.note)]).join(";"));
+        for (const e of s.ex) { const x = exOf(e.id); let n = 0; e.sets.forEach((st) => { lines.push(base.concat([q(s.name), q(x.de), q(hasLv(x) ? x.lv[lvKey(x, e.lv)][1] : ""), x.group, st.wu ? "A" : st.drop ? "D" : ++n, st.wu ? "Aufwärmen" : st.drop ? "Dropsatz" : "", e.ss ? "ja" : "", num(st.w), st.r || "", st.t || "", st.rir != null ? st.rir : "", x.kind === "kg" && !st.wu && !st.drop ? num(Math.round(e1rmOf(+st.w, +st.r) * 10) / 10) : "", Math.round(s.dur / 60), "", "", "", q(s.note), q(notes[e.id] || "")]).join(";")); }); }
+      } else lines.push(base.concat([q(s.name || ""), "", "", "", "", "", "", "", "", "", "", "", Math.round(s.dur / 60), num(s.dist || ""), q(s.kind || ""), s.rpe || "", q(s.note), q("")]).join(";"));
     }
     lines.push("", "Datum;Uhrzeit;Mahlzeit;Name;Lebensmittel;Menge;Gramm;kcal;Eiweiß (g);Fett (g);Kohlenhydrate (g)");
     for (const m of db.meals.slice().sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")))) {
@@ -1210,7 +1303,7 @@
       db.meals = merge(db.meals, inc.meals); db.foods = merge(db.foods, inc.foods); db.mealTpls = merge(db.mealTpls, inc.mealTpls);
       db.weights = mergeWeights(db.weights, inc.weights);
       buildFoodIndex(); unpackDb(db); upgradeMeals();
-      db.settings = { ...inc.settings, ...db.settings, exOver: { ...inc.settings.exOver, ...db.settings.exOver }, goals: db.settings.goals.kcal || db.settings.goals.p ? db.settings.goals : inc.settings.goals };
+      db.settings = { ...inc.settings, ...db.settings, exOver: { ...inc.settings.exOver, ...db.settings.exOver }, exNotes: { ...inc.settings.exNotes, ...db.settings.exNotes }, goals: db.settings.goals.kcal || db.settings.goals.p ? db.settings.goals : inc.settings.goals };
       persist(); render();
       toast(T(`${pl(db.sessions.length - n0, "session")} and ${pl(db.meals.length - m0, "meal")} loaded`, `${pl(db.sessions.length - n0, "session")} und ${pl(db.meals.length - m0, "meal")} geladen`));
     } catch { toast(T("The file couldn't be read", "Die Datei konnte nicht gelesen werden")); }

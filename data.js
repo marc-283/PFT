@@ -1,10 +1,12 @@
-/* PFT 1.4.1 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
+/* PFT 1.5.0 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
 "use strict";
   const VERSION = window.PFT_VERSION || "1.2.0";
 
   /* ================= Language ================= */
   const LANG_KEY = "pft.lang";
-  let LANG = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === "de" || v === "en" ? v : "en"; } catch { return "en"; } })();
+  // first start (nothing chosen yet): German if the phone is set to German, otherwise English
+  const sysLang = () => { try { return /^de\b/i.test(navigator.language || (navigator.languages || [])[0] || "") ? "de" : "en"; } catch { return "en"; } };
+  let LANG = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === "de" || v === "en" ? v : sysLang(); } catch { return sysLang(); } })();
   /* T(english, german) – every visible text goes through here */
   const T = (en, de) => (LANG === "de" ? de : en);
   const NOUN = {
@@ -153,12 +155,13 @@
      Meal items of built-in foods are saved as id + grams only; values come from the food list when loading. */
   const KEY = "pft.data.v1", DRAFT_KEY = "pft.draft.v1", REST_KEY = "pft.rest.v1", BACKUP_KEY = "pft.backup", OPEN_KEY = "pft.open";
   const IDB_NAME = "pft", IDB_STORE = "kv", IDB_KEY = "data";
-  const blank = () => ({ sessions: [], templates: [], exercises: [], meals: [], mealTpls: [], foods: [], weights: [], settings: { rest: 90, sound: true, exOver: {}, goals: { kcal: 0, p: 0, pMode: "fixed", pPerKg: 1.8 }, hide: {} } });
+  const blank = () => ({ sessions: [], templates: [], exercises: [], meals: [], mealTpls: [], foods: [], weights: [], settings: { rest: 90, sound: true, exOver: {}, goals: { kcal: 0, p: 0, pMode: "fixed", pPerKg: 1.8 }, hide: {}, exNotes: {}, rir: false } });
   let db = blank(), draft = null, rest = null, ver = 0;
-  let idb = null, storeMode = "ls", saveChain = Promise.resolve(), saveFails = 0;
+  let idb = null, storeMode = "ls", saveChain = Promise.resolve(), saveFails = 0, lsCopy = false, idbRetryAt = 0, partial = false;
   const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
   const validSession = (s) => !!s && typeof s.id === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s.date || "") && !!SPORTS[s.sport] && (!isLift(s) || Array.isArray(s.ex));
   const validWeight = (w) => !!w && /^\d{4}-\d{2}-\d{2}$/.test(w.date || "") && +w.kg > 20 && +w.kg < 400;
+  const cleanNotes = (o) => { const out = {}; if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) if (typeof v === "string" && v.trim()) out[k] = v.trim().slice(0, 200); return out; };
   function normDb(v) {
     const b = blank(), s = v && typeof v === "object" ? v : {}, st = s.settings && typeof s.settings === "object" ? s.settings : {};
     const byDay = new Map(); for (const w of Array.isArray(s.weights) ? s.weights.filter(validWeight) : []) byDay.set(w.date, { date: w.date, kg: Math.round(+w.kg * 10) / 10, ...(w.time ? { time: w.time } : {}) });
@@ -170,7 +173,7 @@
       mealTpls: Array.isArray(s.mealTpls) ? s.mealTpls.filter((t) => t && t.id && Array.isArray(t.items)).map((t) => ({ ...t, name: String(t.name || ""), items: t.items.filter(Boolean).map(migItem) })) : [],
       foods: Array.isArray(s.foods) ? s.foods.filter((f) => f && f.id && f.name) : [],
       weights: [...byDay.values()].sort((a, c) => a.date.localeCompare(c.date)),
-      settings: { ...b.settings, ...st, exOver: { ...(st.exOver || {}) }, goals: { ...b.settings.goals, ...(st.goals || {}) }, hide: { ...(st.hide || {}) } }
+      settings: { ...b.settings, ...st, exOver: { ...(st.exOver || {}) }, goals: { ...b.settings.goals, ...(st.goals || {}) }, hide: { ...(st.hide || {}) }, exNotes: cleanNotes(st.exNotes), rir: st.rir === true }
     };
   }
   /* ---------- IndexedDB, wrapped in promises ---------- */
@@ -216,27 +219,63 @@
     return mkItem(f, qty, unit, g);
   }
   const packMeal = (m) => ({ ...m, items: m.items.map(packItem) });
-  function packDb(d) { return { ...d, meals: d.meals.map(packMeal), mealTpls: d.mealTpls.map(packMeal) }; }
+  /* savedAt: when this copy was written – lets load() pick the newer of IndexedDB and localStorage.
+     partial: this session could not read IndexedDB, so the copy may lack older data – it gets merged, never preferred. */
+  function packDb(d) { return { ...d, meals: d.meals.map(packMeal), mealTpls: d.mealTpls.map(packMeal), savedAt: new Date().toISOString(), ...(partial ? { partial: true } : {}) }; }
   function unpackDb(d) { for (const m of d.meals.concat(d.mealTpls)) if (m.items.some((it) => it && it.i != null)) m.items = m.items.map(unpackItem); }
   /* ---------- load + save ---------- */
+  /* Which copy is newer? Both stamped → the later savedAt. Older copies have no stamp: a stamped copy beats an unstamped one,
+     and of two unstamped copies localStorage wins – up to 1.4 it was only written when IndexedDB failed, so it is never older. */
+  function newerCopy(a, b) {
+    if (!a || typeof a !== "object") return b ? "ls" : null;
+    if (!b || typeof b !== "object") return "idb";
+    if (a.partial || b.partial) return "merge";
+    const ta = typeof a.savedAt === "string" ? a.savedAt : "", tb = typeof b.savedAt === "string" ? b.savedAt : "";
+    if (ta && tb) return tb > ta ? "ls" : "idb";
+    if (ta || tb) return ta ? "idb" : "ls";
+    return "ls";
+  }
+  /* union of two copies (records by id, weights by day); on a clash the full copy a wins – nothing is lost */
+  function mergeRaw(a, b) {
+    const out = { ...b, ...a, settings: { ...(b.settings || {}), ...(a.settings || {}) } };
+    for (const k of ["sessions", "templates", "exercises", "meals", "mealTpls", "foods"]) {
+      const seen = new Set((a[k] || []).map((x) => x && x.id));
+      out[k] = (a[k] || []).concat((b[k] || []).filter((x) => x && !seen.has(x.id)));
+    }
+    const days = new Set((a.weights || []).map((w) => w && w.date));
+    out.weights = (a.weights || []).concat((b.weights || []).filter((w) => w && !days.has(w.date)));
+    delete out.partial;
+    return out;
+  }
+  const hasIDB = () => typeof indexedDB !== "undefined" && !!indexedDB;
+  const writeLs = () => { try { localStorage.setItem(KEY, JSON.stringify(packDb(db))); lsCopy = true; } catch { /* ignore */ } };
   async function load() {
-    idb = await idbOpen();
-    let raw = null, fromLs = false;
-    if (idb) { try { raw = await idbGet(IDB_KEY); storeMode = "idb"; } catch { idb = null; } }
-    if (!raw) { const old = readJSON(KEY); if (old) { raw = old; fromLs = true; } }
+    let fromIdb = null, idbOk = false;
+    const fromLsRaw = readJSON(KEY);
+    for (let i = 0; i < 2 && !idbOk && hasIDB(); i++) { // iOS sometimes refuses right after launch: try twice
+      if (i) await new Promise((r) => setTimeout(r, 400));
+      idb = await idbOpen();
+      if (idb) { try { fromIdb = await idbGet(IDB_KEY); idbOk = true; } catch { idb = null; } }
+    }
+    if (idbOk) storeMode = "idb";
+    else partial = hasIDB(); // IndexedDB exists but can't be read: work on a copy that is merged in later
+    lsCopy = !!fromLsRaw;
+    const pick = newerCopy(fromIdb, fromLsRaw), fromLs = pick === "ls" || pick === "merge";
+    const raw = pick === "merge" ? (fromIdb && fromIdb.partial && !(fromLsRaw && fromLsRaw.partial) ? mergeRaw(fromLsRaw, fromIdb) : mergeRaw(fromIdb, fromLsRaw)) : pick === "ls" ? fromLsRaw : fromIdb;
     db = normDb(raw);
     const d = readJSON(DRAFT_KEY); if (d && Array.isArray(d.ex) && !d.editOf) { draft = d; if (!draft.sport) draft.sport = "gym"; }
     const r = readJSON(REST_KEY); if (r && r.end > Date.now() - 60000) rest = r;
     buildEx(); buildFoodIndex(); unpackDb(db); ver++;
     const upgraded = upgradeMeals();
-    if (storeMode === "idb" && (fromLs || upgraded)) {
-      // first start with IndexedDB: copy the data over, check it arrived, then free the old localStorage space
+    if (storeMode === "idb" && (fromLs || upgraded || lsCopy)) {
+      // the newer copy goes (back) into IndexedDB; only after reading it back is the localStorage copy freed
       try {
-        await idbPut(IDB_KEY, packDb(db));
+        const snap = packDb(db);
+        await idbPut(IDB_KEY, snap);
         const back = await idbGet(IDB_KEY);
-        if (fromLs && back && Array.isArray(back.sessions) && back.sessions.length === db.sessions.length && back.meals.length === db.meals.length) { try { localStorage.removeItem(KEY); } catch { /* ignore */ } }
-      } catch { storeMode = "ls"; }
-    } else if (storeMode === "ls" && upgraded) { try { localStorage.setItem(KEY, JSON.stringify(packDb(db))); } catch { /* ignore */ } }
+        if (lsCopy && back && back.savedAt === snap.savedAt && Array.isArray(back.sessions) && back.sessions.length === db.sessions.length && back.meals.length === db.meals.length) { try { localStorage.removeItem(KEY); lsCopy = false; } catch { /* ignore */ } }
+      } catch { storeMode = "ls"; idb = null; if (upgraded || pick === "merge") writeLs(); }
+    } else if (storeMode === "ls" && (upgraded || pick === "merge")) writeLs();
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch { /* not supported */ }
   }
   /* v1.1 meal items only had grams + totals → give them amount, unit and values per 100 g, so amounts can be changed later */
@@ -265,19 +304,28 @@
   }
   function saveFailed() {
     saveFails++;
-    toast(T("Can't save – storage full or blocked? Make a backup in Settings.", "Speichern nicht möglich – Speicher voll oder blockiert? Bitte in „Mehr“ ein Backup sichern."));
+    toast(T("Can't save – storage full or blocked? Make a backup under More.", "Speichern nicht möglich – Speicher voll oder blockiert? Bitte unter „Mehr“ ein Backup sichern."));
   }
-  /* writes run one after another; IndexedDB copies the data the moment it is handed over */
+  /* Writes run one after another. Every write tries IndexedDB first – also after an earlier failure, then with a fresh
+     connection (at most every 10 s). If it fails, the copy goes to localStorage; the next successful IndexedDB write
+     removes that copy again, so the two never drift apart. */
+  async function writeSnap(snap) {
+    // a session that couldn't read IndexedDB never writes into it (it might hold more data) – merged at the next start
+    if (!idb && !partial && hasIDB() && Date.now() >= idbRetryAt) { idbRetryAt = Date.now() + 10000; idb = await idbOpen(); }
+    if (idb) {
+      try {
+        await idbPut(IDB_KEY, snap);
+        storeMode = "idb"; saveFails = 0;
+        if (lsCopy) { try { localStorage.removeItem(KEY); lsCopy = false; } catch { /* ignore */ } }
+        return;
+      } catch { idb = null; idbRetryAt = Date.now() + 10000; }
+    }
+    try { localStorage.setItem(KEY, JSON.stringify(snap)); storeMode = "ls"; lsCopy = true; saveFails = 0; } catch { saveFailed(); }
+  }
   function persist() {
     ver++; buildEx(); buildFoodIndex();
     const snap = packDb(db);
-    if (storeMode === "idb" && idb) {
-      saveChain = saveChain.then(() => idbPut(IDB_KEY, snap)).then(() => { saveFails = 0; }).catch(() => {
-        try { localStorage.setItem(KEY, JSON.stringify(snap)); storeMode = "ls"; } catch { saveFailed(); }
-      });
-    } else {
-      try { localStorage.setItem(KEY, JSON.stringify(snap)); } catch { saveFailed(); }
-    }
+    saveChain = saveChain.then(() => writeSnap(snap), () => writeSnap(snap));
     return saveChain;
   }
   const flushSave = () => saveChain;

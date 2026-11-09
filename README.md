@@ -1,6 +1,31 @@
-# PFT – Personal Fitness Tracker · v1.4.1
+# PFT – Personal Fitness Tracker · v1.5.0
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
+
+## Neu in 1.5.0
+
+**Hochladen:** geändert sind `index.html`, `style.css`, `data.js`, `foods.js`, `views.js`, `app.js`, `sw.js` und `README.md` – am einfachsten wieder den ganzen Ordnerinhalt hochladen. `manifest.webmanifest`, `zxing.min.js`, Icons, Schriften und Startbild sind unverändert.
+
+**Fehler behoben**
+- **Speichern ohne Datenverlust:** Jeder gespeicherte Stand trägt jetzt einen Zeitstempel. Beim Start liest PFT IndexedDB *und* den Notfall-Speicher (localStorage) und nimmt den neueren Stand – bisher konnte nach einem fehlgeschlagenen Speichern beim nächsten Start ein älterer Stand zurückkommen. Nach einem Fehlschlag versucht PFT beim nächsten Speichern wieder IndexedDB. Kann IndexedDB beim Start gar nicht gelesen werden, werden die neuen Einträge später zusammengeführt statt überschrieben.
+- **Heute bei laufendem Training:** Statt Hinweis *und* Knopf gibt es nur noch den großen Knopf „▶ Weiter · 0:42“ mit laufender Uhr.
+- **Berichte:** Das Eiweißziel aus dem Körpergewicht rechnet für vergangene Zeiträume mit dem Gewicht des jeweiligen Tages, nicht mit dem heutigen.
+
+**Übersichtlicher**
+- **Heute** zeigt höchstens einen Hinweis: neuer Bericht vor fälligem Backup vor Rekorden der Woche – der nächste erscheint, wenn der vorherige erledigt ist.
+- **Übungskarte:** Die Zeile „Letztes Mal (Datum): …“ ist weg (das zeigt schon die Spalte „Vorher“); das Datum steht klein in der Heute-Zeile: „Heute 82,5 kg × 6–8 · letztes Mal 3. Nov.“.
+- **Essen:** „Meine Mahlzeiten“ und „Nochmal?“ sind jetzt ein Abschnitt **Schnell eintragen** (bis zu 5 eigene ★ + 3 zuletzt gegessene, je „+ Heute“). Die kcal-/Eiweiß-Grafik liegt aufklappbar unten unter „Verlauf 14/30 Tage“.
+- **Eiweißziel** stellst du nur noch unter Mehr → Tagesziele ein; Fortschritt → Körper zeigt den Wert (z. B. „180 g (2 g × 90 kg)“) mit „ändern ›“.
+- **Fortschritt → Kraft** hat einen Abschnitt **Skills** mit allen Calisthenics-Skills, die schon Einträge haben (Stufenleiter, aktuelle Stufe, Bestwert).
+- Beim allerersten Start wählt PFT Deutsch, wenn das Handy auf Deutsch steht, sonst Englisch. Texte sagen überall „Mehr“ statt „Einstellungen“.
+
+**Mehr fürs Training**
+- **Notiz pro Übung** (⋯ → Notiz), z. B. „Sitz Stufe 4, enger Griff“ – steht grau unter dem Übungsnamen in jedem Training und ist in der Übungsansicht änderbar.
+- **Vergleich nach dem Training:** „Im Vergleich zum letzten Mal“ (gleicher Workout-Plan, sonst gleiche Sportart) mit Volumen ±%, Dauer, harten Sätzen, erreichten „Heute“-Zielen (x von y Übungen) und neuen Rekorden.
+- **Monatskalender im Verlauf** mit farbigen Punkten je Sportart; Tag antippen zeigt nur diesen Tag, nochmal antippen hebt den Filter auf.
+- **RIR (Wiederholungen in Reserve), optional:** Mehr → Pausen-Timer → „RIR erfassen“. Dann gibt es pro Satz ein kleines RIR-Feld (antippen → 0–4). Steht im Verlauf und in der CSV.
+- **Scheibenrechner:** ⋯ an einer kg-Übung → „Scheiben berechnen“. Zielgewicht ist mit dem aktuellen Satz vorbelegt, Stange 20/15/10 kg oder ohne → Scheiben pro Seite aus 25/20/15/10/5/2,5/1,25 kg, mit Bild.
+- CSV-Export mit RIR und Übungsnotiz. Notizen und RIR sind im Backup; Backups aus 1.3 und 1.4 laden weiter.
 
 ## Neu in 1.4.1
 
