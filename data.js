@@ -1,4 +1,4 @@
-/* PFT 1.5.0 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
+/* PFT 1.6.0 – Texts (EN/DE), sports and exercises, helpers, storage (IndexedDB) and the data model. */
 "use strict";
   const VERSION = window.PFT_VERSION || "1.2.0";
 
@@ -155,7 +155,7 @@
      Meal items of built-in foods are saved as id + grams only; values come from the food list when loading. */
   const KEY = "pft.data.v1", DRAFT_KEY = "pft.draft.v1", REST_KEY = "pft.rest.v1", BACKUP_KEY = "pft.backup", OPEN_KEY = "pft.open";
   const IDB_NAME = "pft", IDB_STORE = "kv", IDB_KEY = "data";
-  const blank = () => ({ sessions: [], templates: [], exercises: [], meals: [], mealTpls: [], foods: [], weights: [], settings: { rest: 90, sound: true, exOver: {}, goals: { kcal: 0, p: 0, pMode: "fixed", pPerKg: 1.8 }, hide: {}, exNotes: {}, rir: false } });
+  const blank = () => ({ sessions: [], templates: [], exercises: [], meals: [], mealTpls: [], foods: [], weights: [], settings: { rest: 90, sound: true, exOver: {}, goals: { kcal: 0, p: 0, pMode: "fixed", pPerKg: 1.8 }, hide: {}, exNotes: {}, rir: false, adjView: "adj" } });
   let db = blank(), draft = null, rest = null, ver = 0;
   let idb = null, storeMode = "ls", saveChain = Promise.resolve(), saveFails = 0, lsCopy = false, idbRetryAt = 0, partial = false;
   const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
@@ -173,7 +173,7 @@
       mealTpls: Array.isArray(s.mealTpls) ? s.mealTpls.filter((t) => t && t.id && Array.isArray(t.items)).map((t) => ({ ...t, name: String(t.name || ""), items: t.items.filter(Boolean).map(migItem) })) : [],
       foods: Array.isArray(s.foods) ? s.foods.filter((f) => f && f.id && f.name) : [],
       weights: [...byDay.values()].sort((a, c) => a.date.localeCompare(c.date)),
-      settings: { ...b.settings, ...st, exOver: { ...(st.exOver || {}) }, goals: { ...b.settings.goals, ...(st.goals || {}) }, hide: { ...(st.hide || {}) }, exNotes: cleanNotes(st.exNotes), rir: st.rir === true }
+      settings: { ...b.settings, ...st, exOver: { ...(st.exOver || {}) }, goals: { ...b.settings.goals, ...(st.goals || {}) }, hide: { ...(st.hide || {}) }, exNotes: cleanNotes(st.exNotes), rir: st.rir === true, adjView: st.adjView === "real" ? "real" : "adj" }
     };
   }
   /* ---------- IndexedDB, wrapped in promises ---------- */

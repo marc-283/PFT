@@ -1,6 +1,20 @@
-# PFT – Personal Fitness Tracker · v1.5.0
+# PFT – Personal Fitness Tracker · v1.6.0
 
 Fitness-App im Look von PFM: schwarz, gelber Akzent, Barlow-Schrift, Startbildschirm, Wisch-Gesten. Läuft komplett offline auf dem Handy, alle Daten bleiben auf dem Gerät.
+
+## Neu in 1.6.0
+
+**Hochladen:** geändert sind `index.html`, `style.css`, `data.js`, `foods.js` (nur die Versionszeile), `views.js`, `app.js`, `sw.js` und `README.md` – am einfachsten wieder den ganzen Ordnerinhalt hochladen. `manifest.webmanifest`, `zxing.min.js`, Icons, Schriften und Startbild sind unverändert.
+
+- **Übungen nach Muskelgruppe:** Fortschritt → Kraft hat über der Übungsliste Filter-Chips (Alle · Brust · Rücken · …, mit Anzahl). Eine Gruppe antippen zeigt alle ihre Übungen, nochmal antippen oder „Alle“ hebt den Filter auf.
+- **Fortschritt bereinigt um die Reihenfolge:** Wer Bankdrücken nach Butterfly macht, schafft weniger – das ist keine Verschlechterung. PFT rechnet jetzt zu jedem Training aus, wie viele harte Sätze vorher die gleichen Muskeln belastet haben (voll für dieselbe Muskelgruppe, etwa halb für mithelfende Muskeln wie Schultern und Trizeps beim Bankdrücken, wenig für den Rest), und schätzt daraus die Ermüdung (etwa 2 % nach einem Satz, 9 % nach sechs, höchstens 15 %). **Bereinigt** heißt: so gerechnet, als hättest du die Übung an ihrer üblichen Stelle gemacht.
+  - Übungsliste: Umschalter **Echt · Bereinigt** (Standard: bereinigt, wird gemerkt). „≈“ markiert Werte, die die Reihenfolge verändert hat; auch der 12-Wochen-Trend rechnet dann bereinigt.
+  - Übungsansicht: echter Wert groß, darunter der bereinigte; im Chart eine gepunktete Linie, wo die Reihenfolge etwas verändert hat. Karte **Reihenfolge**: an welcher Stelle die Übung zuletzt war, was davor kam, echt vs. bereinigt – und „Wie wird bereinigt?“. Im Verlauf steht die Stelle, wenn sie von der üblichen abweicht („3. Übung“).
+  - Wie stark dich die Reihenfolge bremst, lernt PFT aus deinen eigenen Trainings (persönlicher Faktor, startet beim Standard).
+  - Rekorde und Bestwerte bleiben echt.
+- **Im Training:** Steht eine Übung heute später als letztes Mal, sagt die Karte z. B. „Heute später dran als letztes Mal (nach Butterfly) – ca. 1 Wdh. weniger ist normal.“, steht sie früher: „da ist eher mehr drin“.
+- PFT merkt sich jetzt, wann du den ersten Satz jeder Übung abhakst. So zählt die echte Reihenfolge, auch wenn du die Liste nicht umsortierst. Bei älteren Trainings gilt die Reihenfolge der Liste.
+- Backups aus 1.3 bis 1.5 laden weiter.
 
 ## Neu in 1.5.0
 

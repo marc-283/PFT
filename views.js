@@ -1,14 +1,15 @@
-/* PFT 1.5.0 – Charts and all screens. */
+/* PFT 1.6.0 – Charts and all screens. */
 "use strict";
   /* ================= Derived data (rebuilt when data changes) ================= */
   let memo = { ver: -1 };
   function derived() {
     if (memo.ver === ver) return memo;
     const asc = db.sessions.slice().sort(cmpAsc);
-    const byEx = new Map(), prs = new Map(), tot = new Map();
+    const byEx = new Map(), prs = new Map(), tot = new Map(), fat = new Map();
     for (const s of asc) {
       if (!isLift(s)) continue;
       let vol = 0, sets = 0;
+      for (const [e, f] of sessionFatigue(s)) fat.set(e, f);
       for (const e of s.ex || []) {
         const x = exOf(e.id), st = exStats(e, x.kind);
         sets += st.sets; if (x.kind === "kg") vol += st.vol;
@@ -30,7 +31,8 @@
         if (first) { if (!prs.has(h.s.id)) prs.set(h.s.id, []); prs.get(h.s.id).push(first); }
       });
     }
-    memo = { ver, asc, desc: asc.slice().reverse(), byEx, prs, tot };
+    const cal = orderPass(byEx, fat);
+    memo = { ver, asc, desc: asc.slice().reverse(), byEx, prs, tot, cal };
     return memo;
   }
   const sessionTot = (s) => derived().tot.get(s.id) || { vol: 0, sets: 0 };
@@ -88,7 +90,7 @@
   /* ================= State ================= */
   const state = {
     stack: null, tab: "today", stacks: null, progSeg: "strength", wRange: "90d", wAll: false, enter: false, armed: null, histFilter: "all", histN: 60,
-    pRange: "12w", pMetric: "vol", gWin: "week", exRange: "all", exMetric: {}, exLv: {}, spRange: "12w", spMetric: {}, exAll: false,
+    pRange: "12w", pMetric: "vol", gWin: "week", exRange: "all", exMetric: {}, exLv: {}, spRange: "12w", spMetric: {}, exAll: false, pGroup: "",
     pick: null, full: null, foodDay: null, fRange: "14d", fMetric: "kcal", fOpen: false, histMonth: null, histDay: null, rirOpen: null, exQ: "", foodQ: "", repType: "m", repCmp: "prev", repMetric: "dur", xm: null
   };
   state.stacks = { today: [{ v: "hub" }], train: [{ v: "train" }], food: [{ v: "food" }], prog: [{ v: "prog" }], more: [{ v: "settings" }] };
@@ -111,7 +113,7 @@
     const pw = W - L - R, ph = Hh - Tp - B;
     const frOf = (p, i) => (cfg.bars ? (i + 0.5) / n : p.x != null ? p.x : n <= 1 ? 0.5 : i / (n - 1));
     const X = (fr) => L + fr * pw;
-    const vals = all.map((p) => p.value).concat(cfg.limit ? [cfg.limit] : []);
+    const vals = all.map((p) => p.value).concat(cfg.limit ? [cfg.limit] : [], cfg.line2 ? cfg.line2.filter((v) => v > 0) : []);
     let lo = Math.min(...vals), hi = Math.max(...vals);
     if (cfg.bars || cfg.zero) lo = Math.min(0, lo);
     else { const padv = (hi - lo) * 0.15 || Math.abs(hi) * 0.1 || 1; const allPos = lo >= 0; lo -= padv; hi += padv; if (allPos) lo = Math.max(0, lo); }
@@ -119,11 +121,11 @@
     const step = niceStep(hi - lo, cfg.minStep, cfg.steps);
     const yMin = Math.floor(lo / step + 1e-9) * step, yMax = Math.max(yMin + step, Math.ceil(hi / step - 1e-9) * step);
     const Y = (v) => Tp + ph - ((v - yMin) / (yMax - yMin)) * ph, f = (v) => v.toFixed(1);
-    let pts = all.map((p, i) => ({ ...p, fr: frOf(p, i) }));
+    let pts = all.map((p, i) => ({ ...p, fr: frOf(p, i), v2: cfg.line2 ? cfg.line2[i] : null }));
     if (cfg.reveal != null) {
       const k = clamp(cfg.reveal, 0, n - 1), ki = Math.floor(k), fr = k - ki, nx = pts[ki + 1];
       const cut = pts.slice(0, ki + 1);
-      if (fr > 0.001 && nx) cut.push(cfg.bars ? { ...nx, value: nx.value * fr, ghost: true } : { value: pts[ki].value + (nx.value - pts[ki].value) * fr, fr: pts[ki].fr + (nx.fr - pts[ki].fr) * fr, ghost: true });
+      if (fr > 0.001 && nx) cut.push(cfg.bars ? { ...nx, value: nx.value * fr, ghost: true } : { value: pts[ki].value + (nx.value - pts[ki].value) * fr, fr: pts[ki].fr + (nx.fr - pts[ki].fr) * fr, v2: cfg.line2 ? pts[ki].v2 + (nx.v2 - pts[ki].v2) * fr : null, ghost: true });
       pts = cut;
     }
     const yf = cfg.yfmt || ((v) => nf.format(v));
@@ -138,7 +140,10 @@
       const anchor = !cfg.bars && fr < 0.04 ? "start" : !cfg.bars && fr > 0.96 ? "end" : "middle";
       s += `<text class="xlab" x="${f(x)}" y="${Hh - 6}" text-anchor="${anchor}">${esc(t.text)}</text>`;
     }
-    if (cfg.limit) { const y = Y(cfg.limit); s += `<line class="lim" x1="${L}" x2="${W - R}" y1="${f(y)}" y2="${f(y)}"/><text class="limlab" x="${W - R}" y="${f(y - 6)}" text-anchor="end">${esc(cfg.limitLabel || T("Record", "Rekord"))} ${esc(cfg.limitFmt ? cfg.limitFmt(cfg.limit) : yf(cfg.limit))}</text>`; }
+    if (cfg.limit) {
+      // the label sits at the right end – unless the latest point is right there, then on the left
+      const y = Y(cfg.limit), lp = all[n - 1], near = !cfg.bars && [lp.value, cfg.line2 ? cfg.line2[n - 1] : null].some((v) => v != null && y - Y(v) > -8 && y - Y(v) < 26);
+      s += `<line class="lim" x1="${L}" x2="${W - R}" y1="${f(y)}" y2="${f(y)}"/><text class="limlab" x="${near ? L + 4 : W - R}" y="${f(y - 6)}" text-anchor="${near ? "start" : "end"}">${esc(cfg.limitLabel || T("Record", "Rekord"))} ${esc(cfg.limitFmt ? cfg.limitFmt(cfg.limit) : yf(cfg.limit))}</text>`; }
     if (cfg.bars) {
       const bw = clamp((pw / n) * 0.62, 3, 26), y0 = Y(Math.max(0, yMin));
       pts.forEach((p, i) => { const y1 = Y(p.value); s += `<rect x="${f(X(p.fr) - bw / 2)}" y="${f(Math.min(y0, y1))}" width="${f(bw)}" height="${f(Math.max(p.value ? 2 : 0, Math.abs(y1 - y0)))}" rx="2" style="fill:${cfg.color};opacity:${cfg.partialLast && i === n - 1 ? 0.5 : 1}"/>`; });
@@ -148,6 +153,13 @@
         const gid = "grad" + (++gradCount);
         s += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${cfg.color};stop-opacity:0.3"/><stop offset="1" style="stop-color:${cfg.color};stop-opacity:0"/></linearGradient></defs>`;
         s += `<path d="${d}L${f(X(pts[pts.length - 1].fr))},${f(Tp + ph)}L${f(X(pts[0].fr))},${f(Tp + ph)}Z" style="fill:url(#${gid})"/><path class="line" d="${d}" style="stroke:${cfg.color}"/>`;
+      }
+      if (cfg.line2 && pts.length > 1) {   // second line: the order-adjusted values – dotted, only where it leaves the real line
+        const dev = (p) => p.v2 != null && Math.abs(p.v2 - p.value) > Math.abs(p.value) * 0.005;
+        let d2 = "";
+        pts.forEach((p, i) => { const q = pts[i - 1]; if (q && (dev(p) || dev(q))) d2 += `M${f(X(q.fr))},${f(Y(q.v2))}L${f(X(p.fr))},${f(Y(p.v2))}`; });
+        if (d2) s += `<path class="line2" d="${d2}"/>`;
+        pts.forEach((p) => { if (!p.ghost && dev(p)) s += `<circle class="dot2" cx="${f(X(p.fr))}" cy="${f(Y(p.v2))}" r="3.5"/>`; });
       }
       if (n <= 80) pts.forEach((p) => { if (!p.ghost) s += p.pr ? `<circle class="pr" cx="${f(X(p.fr))}" cy="${f(Y(p.value))}" r="4.5"/>` : `<circle cx="${f(X(p.fr))}" cy="${f(Y(p.value))}" r="3" style="fill:${cfg.color}"/>`; });
       const lp = pts[pts.length - 1];
@@ -243,6 +255,158 @@
   const recLine = (l, v, d) => `<div><span>${esc(l)}</span><b>${esc(v)}<small>${esc(dateFmt.format(isoDate(d)))}</small></b></div>`;
   const ladder = (x, top) => (hasLv(x) ? `<span class="ladder" aria-hidden="true">${x.lv.map((_, i) => `<i class="${i <= top ? "on" : ""}"></i>`).join("")}</span>` : "");
 
+  /* ================= Exercise order: pre-fatigue from earlier exercises =================
+     Every hard set done before an exercise tires it a little: fully for the same muscle group, about half for muscles
+     that help (bench press: shoulders, triceps), a little for everything else. From that load F the expected loss of
+     strength is d(F) = 15 % × (1 − e^(−F/7)) – about 2 % after one set for the same muscles, 9 % after six.
+     "Adjusted" = as if you had done the exercise at its usual place: real × (1 − d(F usual)) / (1 − d(F)).
+     How strongly order affects *you* is learnt from your own workouts (personal factor m, starts at 1). */
+  const FTG = {
+    "Brust": { "Brust": 1, "Schultern": 0.5, "Trizeps": 0.5 },
+    "Schultern": { "Schultern": 1, "Brust": 0.4, "Trizeps": 0.4, "Rücken": 0.2 },
+    "Trizeps": { "Trizeps": 1, "Brust": 0.35, "Schultern": 0.35 },
+    "Rücken": { "Rücken": 1, "Bizeps": 0.5, "Schultern": 0.2, "Beine": 0.2, "Po": 0.2 },
+    "Bizeps": { "Bizeps": 1, "Rücken": 0.35 },
+    "Beine": { "Beine": 1, "Po": 0.7, "Rücken": 0.2 },
+    "Po": { "Po": 1, "Beine": 0.6, "Rücken": 0.2 },
+    "Bauch": { "Bauch": 1 }
+  };
+  const FTG_BASE = 0.1, FTG_CAP = 0.15, FTG_K = 7;
+  const ftgW = (from, to) => { if (from === "Ganzkörper" || to === "Ganzkörper") return from === to ? 1 : 0.3; const v = (FTG[from] || {})[to]; return v != null ? v : FTG_BASE; };
+  const ftgDrop0 = (F) => FTG_CAP * (1 - Math.exp(-Math.max(0, F) / FTG_K));
+  const ftgLog = (F) => Math.log(1 - ftgDrop0(F));                 // ≤ 0: log of the share of strength that is left
+  /* expected performance at load F relative to load F0 (1 = same, 0.95 = 5 % weaker), with the personal factor m */
+  const ftgRatio = (F, F0, m) => Math.exp((m == null ? 1 : m) * (ftgLog(F) - ftgLog(F0)));
+  const ADJ_METRIC = { kg: "e1rm", bw: "reps" };                   // holds are not adjusted
+  /* hard sets of one exercise as fatigue: work sets 1, drop sets ½, warm-ups 0 */
+  const ftgSets = (sets, live) => { let n = 0; for (const q of sets || []) { if (q.wu) continue; if (live || +q.r > 0 || +q.t > 0) n += q.drop ? 0.5 : 1; } return n; };   // live: planned sets count too
+  /* the order you really did it in: by the time of the first ticked set if every exercise has one, else the list order */
+  function sessionOrder(ex) {
+    const L = (ex || []).map((e, i) => ({ e, i }));
+    if (L.length > 1 && L.every(({ e }) => e.t0 != null && Number.isFinite(+e.t0))) L.sort((a, b) => +a.e.t0 - +b.e.t0 || a.i - b.i);
+    return L.map(({ e }) => e);
+  }
+  /* list: [{ e, group, n, ss }] in order → per entry { F, pos, of, by: [[exerciseId, part, sets]] } – superset partners share a place and count half */
+  function orderFatigue(list) {
+    const out = []; let pos = 0, prevSS = null;
+    list.forEach((a, k) => {
+      if (!(a.ss && a.ss === prevSS)) pos++;
+      prevSS = a.ss || null;
+      let F = 0; const by = [];
+      list.forEach((b, j) => {
+        if (j === k || !b.n) return;
+        const partner = !!a.ss && b.ss === a.ss;
+        if (j > k && !partner) return;
+        const part = b.n * ftgW(b.group, a.group) * (partner ? 0.5 : 1);
+        if (part > 0) { F += part; by.push([b.e.id, part, b.n]); }
+      });
+      by.sort((p, q) => q[1] - p[1]);
+      out.push({ F, pos, by });
+    });
+    const of = pos; out.forEach((o) => { o.of = of; });
+    return out;
+  }
+  /* fatigue for every exercise of a saved session: Map exercise entry → info */
+  function sessionFatigue(s) {
+    const L = sessionOrder(s.ex).map((e) => ({ e, group: exOf(e.id).group, n: ftgSets(e.sets), ss: e.ss || null })), f = orderFatigue(L), map = new Map();
+    L.forEach((a, k) => map.set(a.e, f[k]));
+    return map;
+  }
+  const median = (a) => { if (!a.length) return 0; const b = a.slice().sort((p, q) => p - q), h = b.length >> 1; return b.length % 2 ? b[h] : (b[h - 1] + b[h]) / 2; };
+  /* Personal factor m: compares neighbouring workouts of the same exercise (≤ 4 weeks apart) –
+     Δ log e1RM = trend × Δweeks + m × Δ log(1 − d0(F)). Least squares with a prior (m ≈ 1 ± 0.4, trend ≈ +0.4 %/week),
+     so a few workouts only nudge it. Only weight × reps exercises, big jumps (>25 %) are ignored. */
+  function calibrate(byEx) {
+    const S2 = 0.002, LM = 6.25, LB = 1e4, B0 = 0.004;
+    let tt = 0, tg = 0, gg = 0, ty = 0, gy = 0, n = 0;
+    for (const [id, list] of byEx) {
+      if (exOf(id).kind !== "kg") continue;
+      for (let k = 1; k < list.length; k++) {
+        const a = list[k - 1], b = list[k];
+        if (!a.f || !b.f || !(a.st.e1rm > 0) || !(b.st.e1rm > 0)) continue;
+        const dt = daysBetween(a.s.date, b.s.date) / 7; if (dt < 0 || dt > 4) continue;
+        const dy = Math.log(b.st.e1rm / a.st.e1rm); if (Math.abs(dy) > 0.25) continue;
+        const dg = ftgLog(b.f.F) - ftgLog(a.f.F);
+        tt += dt * dt; tg += dt * dg; gg += dg * dg; ty += dt * dy; gy += dg * dy;
+        if (Math.abs(dg) > 0.01) n++;
+      }
+    }
+    const A11 = tt / S2 + LB, A12 = tg / S2, A22 = gg / S2 + LM, r1 = ty / S2 + LB * B0, r2 = gy / S2 + LM;
+    const det = A11 * A22 - A12 * A12;
+    const m = det > 0 ? clamp((A11 * r2 - A12 * r1) / det, 0.3, 2.5) : 1;
+    return { m, n, share: gg / S2 / (gg / S2 + LM) };   // share: how much of m comes from your data (0 … 1)
+  }
+  /* adjusted value of a history entry for metric k (falls back to the real one) */
+  const adjOf = (h, k) => (h.adj && h.adj[k] != null ? h.adj[k] : h.st[k]);
+  const repsAt = (r, ratio) => Math.max(0, 30 * ((1 + r / 30) * ratio - 1));   // Epley: the same strength change in reps
+  /* called by derived(): fatigue per entry, the personal factor and the adjusted values */
+  function orderPass(byEx, fat) {
+    for (const list of byEx.values()) for (const h of list) h.f = fat.get(h.e) || { F: 0, pos: 1, of: 1, by: [] };
+    const cal = calibrate(byEx);
+    for (const [id, list] of byEx) {
+      const x = exOf(id), k = ADJ_METRIC[x.kind];
+      const recent = list.slice(-12), Fu = median(recent.map((h) => h.f.F)), Pu = Math.round(median(recent.map((h) => h.f.pos)));
+      list.usual = { F: Fu, pos: Math.max(1, Pu) };
+      if (!k) continue;
+      for (const h of list) {
+        const ratio = ftgRatio(h.f.F, Fu, cal.m);   // < 1: weaker than usual because of the order
+        h.f.ratio = ratio;
+        const v = h.st[k]; if (!(v > 0)) continue;
+        h.adj = { [k]: k === "reps" ? repsAt(v, 1 / ratio) : v / ratio };
+      }
+    }
+    return cal;
+  }
+  /* "after Pec deck 3 sets, Shoulder press 3 sets" – the exercises before that tired it the most */
+  function byText(by, max) {
+    const top = by.filter((p) => p[1] >= 0.3 * p[2] || p[1] >= 1).slice(0, max || 3);
+    return top.map(([id, , n]) => `${exName(exOf(id))} ${pl(n, "set")}`).join(", ");
+  }
+  const ordinal = (n) => (LANG === "de" ? `${n}.` : n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`);
+  /* live workout: compare today's place with last time's – "later than last time, about 1 rep less is normal" */
+  function orderHint(d, i, last) {
+    if (!d || d.editOf || !last || !last.f) return "";
+    const L = d.ex.map((e) => ({ e, group: exOf(e.id).group, n: ftgSets(e.sets, true), ss: e.ss || null }));
+    const f = orderFatigue(L)[i], x = exOf(d.ex[i].id), m = derived().cal.m;
+    const ratio = ftgRatio(f.F, last.f.F, m);
+    if (ratio > 0.97 && ratio < 1.03) return "";
+    if (ratio >= 1.03) return `<p class="ordhint up">${esc(T("Earlier than last time – there's probably more in it today.", "Heute früher dran als letztes Mal – da ist eher mehr drin."))}</p>`;
+    const after = f.by.length ? exName(exOf(f.by[0][0])) : "";
+    let tail;
+    if (x.kind === "time") tail = T("expect a shorter hold.", "eine kürzere Haltezeit ist normal.");
+    else {
+      const r = last.st.best ? +last.st.best.r : 8, k = Math.max(1, Math.round(r - repsAt(r, ratio)));
+      tail = k === 1 ? T("expect about 1 rep fewer.", "ca. 1 Wdh. weniger ist normal.") : T(`expect about ${k} fewer reps.`, `ca. ${k} Wdh. weniger sind normal.`);
+    }
+    return `<p class="ordhint">${esc(T(`Later than last time${after ? ` (after ${after})` : ""} – ${tail}`, `Heute später dran als letztes Mal${after ? ` (nach ${after})` : ""} – ${tail}`))}</p>`;
+  }
+  /* exercise view: where it was in the last workout, what came before, real vs adjusted – and how it is calculated */
+  function orderCard(x, list) {
+    const k = ADJ_METRIC[x.kind]; if (!k || !list || list.length < 2) return "";
+    const dev = (h) => h.st[k] > 0 && h.f && Math.abs(adjOf(h, k) / h.st[k] - 1) >= 0.01;
+    const last = list[list.length - 1], h = dev(last) ? last : list.slice().reverse().find(dev);
+    if (!h) return "";
+    const u = list.usual || { pos: 1 }, cal = derived().cal, fmt = (v) => METRIC[k].fmt(k === "reps" ? Math.round(v * 10) / 10 : v);
+    const pct = (adjOf(h, k) / h.st[k] - 1) * 100, when = dayMonth.format(isoDate(h.s.date)), before = byText(h.f.by);
+    const place = T(`${ordinal(h.f.pos)} of ${h.f.of} exercises`, `${ordinal(h.f.pos)} von ${h.f.of} Übungen`);
+    const intro = h === last ? "" : `<p class="hint">${esc(T(`Last time at the usual place (${ordinal(last.f.pos)} exercise). Order last made a difference on ${when}:`, `Zuletzt an der üblichen Stelle (${ordinal(last.f.pos)} Übung). Zuletzt anders war es am ${when}:`))}</p>`;
+    const what = h === last ? T(`Last time (${when}): ${place}`, `Zuletzt (${when}): ${place}`) : place;
+    const p1 = `${what}${before ? T(` – before it ${before}`, ` – davor ${before}`) : ""}. ${pct > 0 ? T(`Usually it's your ${ordinal(u.pos)} exercise.`, `Sonst ist sie meist deine ${ordinal(u.pos)} Übung.`) : T(`Usually it comes later (${ordinal(u.pos)} exercise) – this time you were fresher.`, `Sonst kommt sie später (${ordinal(u.pos)} Übung) – diesmal warst du frischer.`)}`;
+    const learnt = cal.n >= 3 && cal.share >= 0.3;
+    const calTxt = learnt ? (cal.m >= 1.15 ? T("Exercise order slows you down more than the standard assumes", "Die Reihenfolge bremst dich stärker als im Standard angenommen") : cal.m <= 0.85 ? T("Exercise order slows you down less than the standard assumes", "Die Reihenfolge bremst dich weniger als im Standard angenommen") : T("Exercise order affects you about as much as the standard assumes", "Die Reihenfolge wirkt bei dir etwa so stark wie im Standard angenommen"))
+      + T(` (factor ${nf1.format(cal.m)}, learnt from ${cal.n} comparisons).`, ` (Faktor ${nf1.format(cal.m)}, gelernt aus ${cal.n} Vergleichen).`)
+      : T("How strongly order affects you is learnt from your workouts – for now the standard values apply. The more often you change the order, the more precise it gets.", "Wie stark dich die Reihenfolge bremst, lernt die App aus deinen Trainings – bisher gelten die Standardwerte. Je öfter du die Reihenfolge wechselst, desto genauer wird es.");
+    return `<section class="card ordcard"><span class="label">${esc(T("Exercise order", "Reihenfolge"))}</span>${intro}
+      <p>${esc(p1)}</p>
+      <div class="kpis"><div class="kpirow"><span class="k">${esc(T("Real", "Echt"))}</span><span class="v"><b>${esc(fmt(h.st[k]))}</b></span><span class="dl"></span></div>
+        <div class="kpirow"><span class="k">${esc(T("Adjusted", "Bereinigt"))}</span><span class="v"><b>≈ ${esc(fmt(adjOf(h, k)))}</b></span><span class="dl">${pct > 0 ? "+" : "−"}${nf0.format(Math.abs(pct))} %</span></div></div>
+      <details class="ordhow"><summary>${esc(T("How is it adjusted?", "Wie wird bereinigt?"))}</summary>
+        <p>${esc(T("Adjusted means: calculated as if you had done the exercise at its usual place in the workout. Every hard set before it counts – fully for the same muscle group, about half for helping muscles (bench press: shoulders and triceps), a little for everything else. From that the app estimates the fatigue: about 2 % after one set, 9 % after six, at most 15 %.", "Bereinigt heißt: so gerechnet, als hättest du die Übung an ihrer üblichen Stelle im Training gemacht. Jeder harte Satz davor zählt – voll für dieselbe Muskelgruppe, etwa halb für mithelfende Muskeln (beim Bankdrücken Schultern und Trizeps), wenig für alles andere. Daraus schätzt die App die Ermüdung: etwa 2 % nach einem Satz, 9 % nach sechs, höchstens 15 %."))}</p>
+        <p>${esc(calTxt)}</p>
+        <p>${esc(T("The order comes from when you ticked the first set of each exercise – for older workouts from the list. Records and personal bests stay real.", "Die Reihenfolge nimmt die App aus der Zeit, zu der du den ersten Satz jeder Übung abhakst – bei älteren Trainings aus der Liste. Rekorde und Bestwerte bleiben echt."))}</p>
+      </details></section>`;
+  }
+
   /* ================= Views ================= */
   /* ---------- Live workout ---------- */
   const blankSet = (wu) => ({ w: "", r: "", t: "", done: false, wu: !!wu });
@@ -305,6 +469,7 @@
       ${lvSel}
       ${goal ? `<p class="todaygoal"><span class="label">${esc(T("Today", "Heute"))}</span><span>${goal} <small>· ${lastDay}</small></span></p>`
         : `<p class="lasttime">${last ? `${lastDay.charAt(0).toUpperCase()}${lastDay.slice(1)}` : esc(T("First time – good luck!", "Zum ersten Mal dabei – viel Erfolg!"))}</p>`}
+      ${orderHint(d, i, last)}
       <div class="sets">
         <div class="setgrid sethead${tm ? " tm" : ""}${rir ? " rir" : ""}" aria-hidden="true"><span>${esc(T("Set", "Satz"))}</span><span>${esc(T("Previous", "Vorher"))}</span>${tm ? `<span>${esc(T("Sec", "Sek."))}</span>` : `<span>${x.kind === "bw" ? "+kg" : "kg"}</span><span>${esc(T("Reps", "Wdh."))}</span>`}${rir ? "<span>RIR</span>" : ""}<span>✓</span></div>
         ${rows}
@@ -495,29 +660,42 @@
       const v = gc[g] / div;
       return `<div class="grow">${badge(groupName(g), GROUP_COLORS[g])}<div class="main"><div class="split"><b>${esc(groupName(g))}</b><span class="val">${win === "week" ? pl(v, "set") : `Ø ${nf1.format(v)} ${nounOnly(2, "set")}`}</span></div><div class="bar"><span style="width:${((v / gmax) * 100).toFixed(1)}%;background:${GROUP_COLORS[g]}"></span><i style="left:${((10 / gmax) * 100).toFixed(1)}%"></i></div></div><span></span></div>`;
     }).join("");
-    const exRows = [...D.byEx.entries()].filter(([id]) => !exOf(id).cali || exOf(id).cali === "basic").map(([exId, hist]) => ({ exId, hist, last: hist[hist.length - 1].s.date })).sort((a, b) => b.last.localeCompare(a.last));
-    const shown = state.exAll ? exRows : exRows.slice(0, 10);
-    const exHTML = shown.map(({ exId, hist }) => exProgressRow(exId, hist)).join("");
+    const exAll = [...D.byEx.entries()].filter(([id]) => !exOf(id).cali || exOf(id).cali === "basic").map(([exId, hist]) => ({ exId, hist, last: hist[hist.length - 1].s.date })).sort((a, b) => b.last.localeCompare(a.last));
+    // filter by muscle group: chips for the groups that have exercises, tap again (or "All") to clear
+    const cnt = {}; for (const r of exAll) { const g = exOf(r.exId).group; cnt[g] = (cnt[g] || 0) + 1; }
+    const pg = cnt[state.pGroup] ? state.pGroup : "", exRows = pg ? exAll.filter((r) => exOf(r.exId).group === pg) : exAll;
+    const gList = GROUPS.filter((g) => cnt[g]);
+    const gChips = gList.length > 1 ? `<div class="chiprow exgroups" role="group" aria-label="${esc(T("Muscle group", "Muskelgruppe"))}">${[["", T("All", "Alle"), exAll.length]].concat(gList.map((g) => [g, groupName(g), cnt[g]])).map(([g, t, n]) => `<button class="fchip" data-action="p-group" data-arg="${esc(g)}" aria-pressed="${pg === g}">${g ? `<i style="background:${GROUP_COLORS[g]}"></i>` : ""}${esc(t)}<small>${n}</small></button>`).join("")}</div>` : "";
+    const shown = state.exAll || pg ? exRows : exRows.slice(0, 10), adj = db.settings.adjView !== "real";
+    const canAdj = exAll.some((r) => ADJ_METRIC[exOf(r.exId).kind]);
+    const exHTML = shown.map(({ exId, hist }) => exProgressRow(exId, hist, adj)).join("");
+    const skillsF = pg ? skillsSec(D, pg) : skills;   // the group filter applies to the skills too
     return `
       ${head}
       <div class="ctlrow">${pills("p-metric", m, [["vol", T("Volume", "Volumen")], ["count", T("Workouts", "Trainings")], ["sets", T("Sets", "Sätze")]], T("Metric", "Kennzahl"))}${rangePills("p-range", rg, ["12w", "6m", "1y"])}</div>
       ${chart}
       ${st3([T("Workouts", "Trainings"), String(inR.length)], [T("Sets", "Sätze"), nf0.format(inR.reduce((a, s) => a + sessionTot(s).sets, 0))], [T("Records", "Rekorde"), String(prN), "var(--accent)"])}
-      <section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Exercises", "Übungen"))}</h2><span class="label">${esc(T("Latest best", "Bester Wert zuletzt"))}</span></div>${exHTML}
-        ${exRows.length > 10 && !state.exAll ? `<button class="more" data-action="ex-all">${esc(T(`Show all ${exRows.length} exercises`, `Alle ${exRows.length} Übungen anzeigen`))}</button>` : ""}</section>
-      ${skills}
+      <section class="sec exsec"><div class="sechead"><h2 class="sectitle">${esc(T("Exercises", "Übungen"))}</h2>${canAdj ? pills("p-adj", adj ? "adj" : "real", [["real", T("Real", "Echt")], ["adj", T("Adjusted", "Bereinigt")]], T("Values", "Werte")) : `<span class="label">${esc(T("Latest best", "Bester Wert zuletzt"))}</span>`}</div>
+        ${gChips}
+        ${canAdj ? `<p class="hint exhint">${esc(adj ? T("Latest best, adjusted for exercise order – ≈ marks values that order changed.", "Bester Wert zuletzt, bereinigt um die Reihenfolge – ≈ markiert Werte, die die Reihenfolge verändert hat.") : T("Latest best, as lifted.", "Bester Wert zuletzt, so wie gehoben."))}</p>` : ""}
+        ${exHTML}
+        ${exRows.length > 10 && !state.exAll && !pg ? `<button class="more" data-action="ex-all">${esc(T(`Show all ${exRows.length} exercises`, `Alle ${exRows.length} Übungen anzeigen`))}</button>` : ""}</section>
+      ${skillsF}
       <section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Muscle groups", "Muskelgruppen"))}</h2><span class="label">${esc(T("Sets", "Sätze"))}</span></div>${pills("g-win", win, [["week", T("This week", "Diese Woche")], ["4w", T("Avg. 4 weeks", "Ø 4 Wochen")]], T("Period", "Zeitraum"))}
         ${groups || `<p class="hint" style="padding:10px 0">${esc(win === "week" ? T("No sets this week yet.", "Diese Woche noch keine Sätze.") : T("No sets in the last 4 weeks.", "Keine Sätze in den letzten 4 Wochen."))}</p>`}
         <p class="hint" style="margin-top:10px">${esc(T("Counts hard sets without warm-ups, gym and calisthenics. The mark shows 10 sets a week – a common guideline for muscle growth is about 10–20.", "Gezählt werden harte Sätze ohne Aufwärmsätze, Gym und Calisthenics. Der Strich markiert 10 Sätze pro Woche – ein gängiger Richtwert für Muskelaufbau liegt bei etwa 10–20."))}</p></section>`;
   }
-  function exProgressRow(exId, hist) {
+  function exProgressRow(exId, hist, adj) {
     const x = exOf(exId), mm = metricsFor(x.kind)[0], top = hasLv(x) ? hist.reduce((a, h) => Math.max(a, h.lv), 0) : null;
-    const H = hasLv(x) ? hist.filter((h) => h.lv === top) : hist, series = H.map((h) => h.st[mm]);
+    const useAdj = adj && ADJ_METRIC[x.kind] === mm, val = (h) => (useAdj ? adjOf(h, mm) : h.st[mm]);
+    const H = hasLv(x) ? hist.filter((h) => h.lv === top) : hist, series = H.map(val);
     const lastV = series[series.length - 1], cut = addDays(todayISO(), -84), base = H.find((h) => h.s.date >= cut);
-    const delta = base && base !== H[H.length - 1] && base.st[mm] ? (lastV - base.st[mm]) / base.st[mm] : null;
+    const delta = base && base !== H[H.length - 1] && val(base) ? (lastV - val(base)) / val(base) : null;
+    const lastH = H[H.length - 1], moved = useAdj && lastH.st[mm] > 0 && Math.abs(lastV / lastH.st[mm] - 1) >= 0.01;
+    const shownV = mm === "reps" ? Math.round(lastV * 10) / 10 : lastV;
     const dTxt = delta == null ? `<small>${esc(rel(H[H.length - 1].s.date))}</small>` : `<small class="${delta >= 0 ? "pos" : "neg"}">${delta >= 0 ? "+" : "−"}${nf0.format(Math.abs(delta * 100))} % ${esc(T("in 12 W", "in 12 W"))}</small>`;
     const sub = hasLv(x) ? `${ladder(x, top)} ${esc(lvName(x, top))}` : `${pl(hist.length, "workout")} · ${esc(metricLabel(mm, x.kind))}`;
-    return `<button class="row" data-action="ex" data-arg="${esc(exId)}" style="grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:10px">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${sub}</span></span><span>${spark(series.slice(-10), GROUP_COLORS[x.group], 54)}</span><span class="val">${esc(METRIC[mm].fmt(lastV))}${dTxt}</span><span class="chev" aria-hidden="true">›</span></button>`;
+    return `<button class="row" data-action="ex" data-arg="${esc(exId)}" style="grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:10px">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${sub}</span></span><span>${spark(series.slice(-10), GROUP_COLORS[x.group], 54)}</span><span class="val">${moved ? "≈ " : ""}${esc(METRIC[mm].fmt(shownV))}${dTxt}</span><span class="chev" aria-hidden="true">›</span></button>`;
   }
 
   /* ---------- One exercise ---------- */
@@ -546,16 +724,23 @@
     if (!H.length) chart = `<div class="chart-empty">${esc(lvOn ? T("No sessions at this level in this period.", "Keine Einheit auf dieser Stufe im Zeitraum.") : T("No workout in this period.", "Kein Training in diesem Zeitraum."))}</div>`;
     else {
       const first = H[0], lastH = H[H.length - 1], d0 = lastH.st[m] - first.st[m];
-      const deltaTxt = H.length > 1 ? `<span class="${d0 >= 0 ? "pos" : "neg"}">${d0 >= 0 ? "+" : "−"}${esc(M.fmt(Math.abs(d0)))}</span> ${esc(T("since", "seit"))} ${esc(dateFmt.format(isoDate(first.s.date)))}` : esc(T("First entry in this period", "Erster Eintrag im Zeitraum"));
-      const subOf = (h) => `${esc(dateFmt.format(isoDate(h.s.date)))} · ${esc(setsSummary(h.e, x.kind))}`;
+      const dTxt = (dv) => `<span class="${dv >= 0 ? "pos" : "neg"}">${dv >= 0 ? "+" : "−"}${esc(M.fmt(Math.abs(dv)))}</span> ${esc(T("since", "seit"))} ${esc(dateFmt.format(isoDate(first.s.date)))}`;
+      const deltaTxt = H.length > 1 ? dTxt(d0) : esc(T("First entry in this period", "Erster Eintrag im Zeitraum"));
+      // order-adjusted line: only where the exercise order changed something
+      const fmtA = (v) => M.fmt(m === "reps" ? Math.round(v * 10) / 10 : v);
+      const adjOn = ADJ_METRIC[x.kind] === m && H.some((h) => h.st[m] > 0 && Math.abs(adjOf(h, m) / h.st[m] - 1) >= 0.005);
+      const adjSub = (h) => (adjOn && Math.abs(adjOf(h, m) / h.st[m] - 1) >= 0.005 ? ` · ${esc(T("adj.", "ber."))} ≈ ${esc(fmtA(adjOf(h, m)))}` : "");
+      const adjLine = adjOn ? `<span class="adjsub">${esc(T("Adjusted", "Bereinigt"))} ≈ ${esc(fmtA(adjOf(lastH, m)))}${H.length > 1 ? ` · ${dTxt(adjOf(lastH, m) - adjOf(first, m))}` : ""}</span>` : "";
+      const subOf = (h) => `${esc(dateFmt.format(isoDate(h.s.date)))} · ${esc(setsSummary(h.e, x.kind))}${adjSub(h)}`;
       chart = chartBlock("chEx", {
         points: H.map((h) => ({ value: h.st[m], x: clamp(daysBetween(from, h.s.date) / span, 0, 1), pr: (h.pr || []).includes(m) })),
+        line2: adjOn ? H.map((h) => adjOf(h, m)) : null,
         ticks: monthTicks(from, today), color: GROUP_COLORS[x.group] || "var(--accent)", minStep: M.step, steps: m === "time" ? [5, 10, 15, 30, 60, 120] : null,
         limit: allBest, limitLabel: T("Record", "Rekord"), limitFmt: M.fmt, yfmt: yfmtFor(m), aria: `${metricLong(m, x.kind)} ${exName(x)}`
       }, {
-        label: `${metricLong(m, x.kind)}${lvOn ? ` · ${lvName(x, lv)}` : ""} · ${T("latest", "zuletzt")}`, base: { v: M.fmt(lastH.st[m]), sub: deltaTxt },
+        label: `${metricLong(m, x.kind)}${lvOn ? ` · ${lvName(x, lv)}` : ""} · ${T("latest", "zuletzt")}`, base: { v: M.fmt(lastH.st[m]), sub: deltaTxt + adjLine },
         at: (i) => ({ v: M.fmt(H[i].st[m]), sub: subOf(H[i]) })
-      }, `<span><i style="border-color:${GROUP_COLORS[x.group]}"></i>${esc(metricLabel(m, x.kind))} ${esc(T("per workout", "je Training"))}</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>${esc(T("Record", "Rekord"))}</span>`);
+      }, `<span><i style="border-color:${GROUP_COLORS[x.group]}"></i>${esc(metricLabel(m, x.kind))} ${esc(T("per workout", "je Training"))}</span>${adjOn ? `<span><i class="dots2"></i>${esc(T("adjusted", "bereinigt"))}</span>` : ""}<span><i style="border-color:var(--accent);border-top-style:dashed"></i>${esc(T("Record", "Rekord"))}</span>`);
     }
     const rec = (t) => { let best = null; for (const h of hist) if (!best || (h.st[t] || 0) > (best.st[t] || 0)) best = h; return best && best.st[t] ? best : null; };
     const recRow = (lab, h, val) => (h ? `<div><span>${esc(lab)}</span><b>${esc(val)}<small>${esc(dateFmt.format(isoDate(h.s.date)))}</small></b></div>` : "");
@@ -570,7 +755,10 @@
     } else { const a = rec("time"), b = rec("total"); recs = recRow(T("Longest hold", "Längste Haltezeit"), a, a && secTxt(a.st.time)) + recRow(T("Total hold per workout", "Haltezeit pro Training"), b, b && secTxt(b.st.total)); }
     const lastH = hist.length ? hist[hist.length - 1] : all[all.length - 1];
     const tip = progressTip(lastH, x, hist.length ? lv : null);
-    const rows = hist.slice().reverse().slice(0, 30).map((h) => `<button class="row" data-action="session" data-arg="${esc(h.s.id)}">${badgeSport(h.s.sport)}<span class="main"><span class="t1">${esc(setsSummary(h.e, x.kind))}${(h.pr || []).length ? `<span class="tag attn">PR</span>` : ""}</span><span class="t2">${esc(dayTxt(h.s.date))} · ${esc(h.s.name || T("Workout", "Training"))}</span></span><span class="val">${esc(METRIC[ms[0]].fmt(h.st[ms[0]]))}</span><span class="chev" aria-hidden="true">›</span></button>`).join("");
+    const ak = ADJ_METRIC[x.kind];
+    const rowAdj = (h) => { if (!ak || !(h.st[ak] > 0)) return ""; const a = adjOf(h, ak); return Math.abs(a / h.st[ak] - 1) >= 0.01 ? `<small>${esc(T("adj.", "ber."))} ≈ ${esc(METRIC[ak].fmt(ak === "reps" ? Math.round(a * 10) / 10 : a))}</small>` : ""; };
+    const posTxt = (h) => (h.f && all.usual && h.f.pos !== all.usual.pos ? ` · ${esc(T(`${ordinal(h.f.pos)} exercise`, `${ordinal(h.f.pos)} Übung`))}` : "");
+    const rows = hist.slice().reverse().slice(0, 30).map((h) => `<button class="row" data-action="session" data-arg="${esc(h.s.id)}">${badgeSport(h.s.sport)}<span class="main"><span class="t1">${esc(setsSummary(h.e, x.kind))}${(h.pr || []).length ? `<span class="tag attn">PR</span>` : ""}</span><span class="t2">${esc(dayTxt(h.s.date))} · ${esc(h.s.name || T("Workout", "Training"))}${posTxt(h)}</span></span><span class="val">${esc(METRIC[ms[0]].fmt(h.st[ms[0]]))}${rowAdj(h)}</span><span class="chev" aria-hidden="true">›</span></button>`).join("");
     return `
       ${head}
       ${noteCard}
@@ -579,6 +767,7 @@
       ${chart}
       ${st3([T("Workouts", "Trainings"), String(hist.length)], [T("Record", "Rekord"), allBest ? M.fmt(allBest) : "–", "var(--accent)"], [T("Last", "Zuletzt"), rel(lastH.s.date)])}
       ${tip}
+      ${orderCard(x, all)}
       ${ladderCard}
       ${recs ? `<section class="card"><span class="label">${esc(T("Personal bests", "Bestwerte"))}${lvOn ? ` · ${esc(lvName(x, lv))}` : ""}</span><div class="prlist">${recs}</div></section>` : ""}
       ${rows ? `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("History", "Verlauf"))}</h2><span class="label">${esc(metricLabel(ms[0], x.kind))}</span></div>${rows}</section>` : ""}
@@ -620,8 +809,8 @@
     return `<button class="row" data-action="ex" data-arg="${esc(x.id)}">${badgeEx(x)}<span class="main"><span class="t1">${esc(exName(x))}</span><span class="t2">${sub}</span></span><span class="val">${best ? esc(METRIC[mm].fmt(best)) : ""}</span><span class="chev" aria-hidden="true">›</span></button>`;
   }
   /* skills that already have entries, most recent first – for Progress → Strength */
-  function skillsSec(D) {
-    const xs = [...EX.values()].filter((x) => (x.cali === "static" || x.cali === "dynamic") && !x.hidden && (D.byEx.get(x.id) || []).length)
+  function skillsSec(D, g) {
+    const xs = [...EX.values()].filter((x) => (x.cali === "static" || x.cali === "dynamic") && !x.hidden && (!g || x.group === g) && (D.byEx.get(x.id) || []).length)
       .map((x) => ({ x, last: D.byEx.get(x.id).slice(-1)[0].s.date })).sort((a, b) => b.last.localeCompare(a.last));
     if (!xs.length) return "";
     return `<section class="sec"><div class="sechead"><h2 class="sectitle">${esc(T("Skills", "Skills"))}</h2><span class="label">${esc(T("Level · best", "Stufe · Bestwert"))}</span></div>${xs.map(({ x }) => skillRow(x, D)).join("")}</section>`;

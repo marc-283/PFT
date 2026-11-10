@@ -1,4 +1,4 @@
-/* PFT 1.5.0 – Taps, sheets, gestures, timers, barcode scanner and app start. */
+/* PFT 1.6.0 – Taps, sheets, gestures, timers, barcode scanner and app start. */
 "use strict";
   const VIEWS = { hub: viewHub, train: viewTrain, prog: viewProg, body: viewBody, live: viewLive, session: viewSession, history: viewHistory, progress: viewProgress, exercise: viewExercise, workouts: viewTrain, tpl: viewTpl, sport: viewSport, settings: viewSettings, exlist: viewExlist, cali: viewCali, food: viewFood, meal: viewMeal, foods: viewFoods, mymeals: viewMyMeals, reports: viewReports, report: viewReport };
   const FAB = {
@@ -127,7 +127,7 @@
     const s = sessionById(id); if (!s) return;
     draft = {
       id: s.id, editOf: s.id, sport: s.sport, name: s.name || "", tpl: s.tpl || null, date: s.date, time: s.time || "", start: 0, dur: String(Math.round((s.dur || 0) / 60)), note: s.note || "",
-      ex: s.ex.map((e) => ({ id: e.id, tr: e.tr || "", ...(e.lv != null ? { lv: e.lv } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}), sets: e.sets.map((q) => ({ w: fmtIn(q.w), r: fmtIn(q.r), t: fmtIn(q.t), done: true, wu: !!q.wu, ...(q.drop ? { drop: true } : {}), ...(q.rir != null ? { rir: q.rir } : {}) })) }))
+      ex: s.ex.map((e) => ({ id: e.id, tr: e.tr || "", ...(e.lv != null ? { lv: e.lv } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}), ...(Number.isFinite(e.t0) ? { t0: e.t0 } : {}), sets: e.sets.map((q) => ({ w: fmtIn(q.w), r: fmtIn(q.r), t: fmtIn(q.t), done: true, wu: !!q.wu, ...(q.drop ? { drop: true } : {}), ...(q.rir != null ? { rir: q.rir } : {}) })) }))
     };
     draft.sig = draftSig(draft);
     go("live");
@@ -144,7 +144,7 @@
   function finishDraft() {
     const d = draft; if (!d) return;
     const ex = [];
-    for (const e of d.ex) { const x = exOf(e.id), sets = e.sets.map((s) => cleanSet(s, x.kind)).filter(Boolean); if (sets.length) ex.push({ id: e.id, sets, ...(e.tr ? { tr: e.tr } : {}), ...(hasLv(x) ? { lv: lvKey(x, e.lv) } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}) }); }
+    for (const e of d.ex) { const x = exOf(e.id), sets = e.sets.map((s) => cleanSet(s, x.kind)).filter(Boolean); if (sets.length) ex.push({ id: e.id, sets, ...(e.tr ? { tr: e.tr } : {}), ...(hasLv(x) ? { lv: lvKey(x, e.lv) } : {}), ...(e.rest != null ? { rest: e.rest } : {}), ...(e.ss ? { ss: e.ss } : {}), ...(Number.isFinite(e.t0) ? { t0: e.t0 } : {}) }); }
     fixSS(ex);
     if (!ex.length) { toast(T("No sets entered yet", "Noch keine Sätze eingetragen")); return; }
     const manual = parseNum(d.dur), orig = d.editOf ? sessionById(d.editOf) : null;
@@ -214,6 +214,8 @@
       case "p-metric": state.pMetric = arg; render(); break;
       case "g-win": state.gWin = arg; render(); break;
       case "ex-all": state.exAll = true; render(); break;
+      case "p-group": state.pGroup = arg === state.pGroup ? "" : arg; render(); break;
+      case "p-adj": db.settings.adjView = arg === "real" ? "real" : "adj"; queuePersist(); render(); break;
       case "ex-range": state.exRange = arg; render(); break;
       case "ex-metric": state.exMetric[exOf(topP()).kind] = arg; render(); break;
       case "sp-range": state.spRange = arg; render(); break;
@@ -416,6 +418,7 @@
       s.r = rv; s.w = wv;
     }
     s.done = true; draft.last = Date.now();
+    if (!s.wu && e.t0 == null && !draft.editOf && draft.start) e.t0 = Math.max(0, Math.round((Date.now() - draft.start) / 1000));   // real order of the exercises
     if (!s.wu) {
       const { t, b } = bestBefore(e.id, x.kind, draft, e.lv);
       const v = t === "e1rm" ? e1rmOf(parseNum(s.w) || 0, parseNum(s.r) || 0) : t === "reps" ? parseNum(s.r) || 0 : parseNum(s.t) || 0;
@@ -1367,6 +1370,9 @@
       if (w % 2 === 0) { const date = addDays(wk, 3); if (date <= today) sessions.push({ id: newId() + "h" + w, sport: "hyrox", date, time: "19:00", dur: w === 4 ? 82 * 60 + 14 : 60 * 60, kind: w === 4 ? "Simulation" : "Training", rpe: w === 4 ? 9 : 7, note: w === 4 ? T("Wall balls at the end were hard", "Wall Balls am Ende hart") : "", created: stamp, example: true }); }
       { const date = addDays(wk, 6); if (date <= today && w % 4 !== 1) sessions.push({ id: newId() + "f" + w, sport: "fb", date, time: "15:00", dur: (w % 2 ? 90 : 75) * 60, kind: w % 2 ? "Spiel" : "Training", ...(w % 2 && rnd() > 0.5 ? { goals: 1 } : {}), ...(w % 2 && rnd() > 0.6 ? { assists: 1 } : {}), rpe: 7, note: "", created: stamp, example: true }); }
     }
+    // the latest push day in a different order: incline press and shoulder press first, bench press third (and a bit weaker)
+    { const pu = sessions.filter((q) => q.tpl === tpls[0].id).pop(), bi = pu ? pu.ex.findIndex((e) => e.id === "x:bench") : -1;
+      if (bi === 0) { const b = pu.ex.splice(0, 1)[0]; pu.ex.splice(2, 0, b); b.sets.forEach((q) => { if (!q.wu) q.r = Math.max(4, q.r - 2); }); const inc = pu.ex.find((e) => e.id === "x:incline-db"); if (inc) inc.sets.forEach((q) => { q.r += 1; }); [pu.ex[0], pu.ex[1]] = [pu.ex[1], pu.ex[0]]; } }
     // a week of meals
     const MENU = [
       ["breakfast", "07:45", T("4 eggs, 2 slices wholegrain bread, 1 tbsp butter, 1 banana", "4 Eier, 2 Scheiben Vollkornbrot, 1 EL Butter, 1 Banane")],

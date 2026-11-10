@@ -1,4 +1,4 @@
-/* PFT 1.5.0 – styles */
+/* PFT 1.6.0 – styles */
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/barlow-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/barlow-latin-500-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/barlow-latin-600-normal.woff2") format("woff2"); }
@@ -762,3 +762,24 @@ body.scanning .tabbar, body.scanning .fab { visibility: hidden; }
 .mainbtns .addbig.resume { padding-inline: 12px; }
 .setchk, .rirchip { width: 100%; max-width: 44px; justify-self: end; }
 .cmpcard .kpirow .k { white-space: normal; overflow: visible; }
+
+/* 1.6: muscle-group filter, real/adjusted, exercise order */
+.exsec .sechead { align-items: center; }
+.exsec .sechead .pills button { padding: 6px 12px; font-size: 13.5px; }
+.exgroups { margin: 6px 0 4px; }
+.exgroups .fchip small { font-size: 12px; font-weight: 600; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.exhint { margin: 4px 0 2px; font-size: 13px; }
+.chart .line2 { fill: none; stroke: var(--ink); stroke-width: 1.75; stroke-dasharray: 1.5 4.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+.chart .dot2 { fill: var(--bg); stroke: var(--ink); stroke-width: 1.5; }
+.legend i.dots2 { border-top: 2px dotted var(--ink); }
+.herosub .adjsub { display: block; margin-top: 2px; font-size: 14px; color: var(--ink); opacity: 0.85; }
+.ordhint { margin: -4px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--muted); padding-left: 12px; border-left: 2px solid var(--line); }
+.ordhint::before { content: "⇅ "; color: var(--ink); }
+.ordhint.up::before { color: var(--pos); }
+.ordcard p { margin: 6px 0 0; color: var(--ink); line-height: 1.4; }
+.ordcard .hint { color: var(--muted); }
+.ordcard .kpis { display: flex; flex-direction: column; margin-top: 4px; }
+.ordcard .kpirow:last-child { border-bottom: 0; }
+.ordhow { margin-top: 6px; }
+.ordhow summary { color: var(--muted); font-weight: 600; font-size: 14px; cursor: pointer; padding: 6px 0; }
+.ordhow p { color: var(--muted); font-size: 13.5px; }
